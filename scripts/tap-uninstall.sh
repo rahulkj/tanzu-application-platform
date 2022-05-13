@@ -3,7 +3,7 @@
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
 
-source ${DIR}/.envrc
+source ${DIR}/env
 
 tanzu package installed delete tap -n tap-install -y
 
