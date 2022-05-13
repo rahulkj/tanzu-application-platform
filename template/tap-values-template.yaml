@@ -1,0 +1,51 @@
+#@ load("@ytt:data", "data")
+
+profile: full
+ceip_policy_disclosed: TRUE
+buildservice:
+  kp_default_repository: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_PROJECT + "/" + data.values.HARBOR_REPOSITORY
+  kp_default_repository_username: #@ data.values.HARBOR_REGISTRY_USERNAME
+  kp_default_repository_password: #@ data.values.HARBOR_REGISTRY_PASSWORD
+  tanzunet_username: #@ data.values.TANZU_REGISTRY_USERNAME
+  tanzunet_password: #@ data.values.TANZU_REGISTRY_PASSWORD
+  descriptor_name: "full"
+  ca_cert_data: #@ data.values.harbor.certificate
+
+supply_chain: basic
+
+cnrs:
+  domain_name: #@ data.values.TAP_INGRESS_DOMAIN
+
+ootb_supply_chain_basic:
+  registry:
+    server: #@ data.values.HARBOR_REGISTRY_HOST
+    repository: #@ data.values.HARBOR_PROJECT
+  gitops:
+    ssh_secret: ""
+
+learningcenter:
+  ingressDomain: #@ "learning." + data.values.TAP_INGRESS_DOMAIN
+
+tap_gui:
+  service_type: ClusterIP
+  ingressEnabled: "true"
+  ingressDomain: #@ data.values.TAP_INGRESS_DOMAIN
+  app_config:
+    app:
+      baseUrl: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+    backend:
+      baseUrl: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+      cors:
+        origin: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+
+metadata_store:
+  app_service_type: LoadBalancer
+
+grype:
+  namespace: "tap-install"
+  targetImagePullSecret: "tap-registry"
+
+contour:
+  envoy:
+    service:
+      type: LoadBalancer
