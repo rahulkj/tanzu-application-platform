@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
