@@ -1,1 +1,3 @@
 .envrc
+config/*.yml
+config/*.yaml
