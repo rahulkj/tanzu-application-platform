@@ -1,9 +1,18 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
 
-source ${DIR}/env
+if [[ -f "${DIR}/env" ]]; then
+    echo "env file exists"
+    source ${DIR}/env
+elif [[ -f "${DIR}/.envrc" ]]; then
+    echo ".envrc file found"
+    source ${DIR}/.envrc
+else
+    echo "could not find the env or .envrc file, exiting"
+    exit 1
+fi
 
 install_tanzu_plugins() {
    pushd ${TANZU_CLI_DIR}
