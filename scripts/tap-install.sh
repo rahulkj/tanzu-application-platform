@@ -46,7 +46,7 @@ install_tkg_essentials() {
    popd
 }
 
-stage_for_tap_install() {
+copy_images_to_registry() {
    export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
    export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
@@ -55,6 +55,13 @@ stage_for_tap_install() {
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
       --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_HARBOR_PROJECT}/${TAP_HARBOR_TAP_PACKAGES_REPOSITORY} \
       --registry-ca-cert-path ${HARBOR_CA_CERT_PATH}
+}
+
+stage_for_tap_install() {
+   export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
+   export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
+   export TAP_VERSION=${TAP_VERSION}
 
    kubectl create ns tap-install
 
@@ -85,5 +92,6 @@ install_tanzu_plugins
 docker_login_to_tanzunet
 configure_psp_for_tkgs
 install_tkg_essentials
+copy_images_to_registry
 stage_for_tap_install
 install_tap
