@@ -16,4 +16,5 @@ export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to 
 
 export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deploying contour
 
-export TAP_VERSION=1.1.0                    # TAP version
+export TAP_VERSION=1.2.0                    # TAP version
+export TAP_PROFILE=                         # light or full
