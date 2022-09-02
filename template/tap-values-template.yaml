@@ -1,8 +1,9 @@
 #@ load("@ytt:data", "data")
+---
 
 profile: #@ data.values.PROFILE
 
-ceip_policy_disclosed: TRUE
+ceip_policy_disclosed: true
 
 buildservice:
   kp_default_repository: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_PROJECT + "/" + data.values.HARBOR_REPOSITORY
@@ -12,10 +13,11 @@ buildservice:
   tanzunet_password: #@ data.values.TANZU_REGISTRY_PASSWORD
   ca_cert_data: #@ data.values.harbor.certificate
 
+
 supply_chain: basic
 
 shared:
-  ingress_domain: #@ data.values.TAP_INGRESS_DOMAIN
+  ingress_domain: #@ data.values.INGRESS_DOMAIN
 
 ootb_supply_chain_basic:
   registry:
@@ -27,14 +29,17 @@ ootb_supply_chain_basic:
 tap_gui:
   service_type: ClusterIP
   ingressEnabled: "true"
-  ingressDomain: #@ data.values.TAP_INGRESS_DOMAIN
   app_config:
     app:
-      baseUrl: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+      baseUrl: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
     backend:
-      baseUrl: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+      baseUrl: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
       cors:
-        origin: #@ "http://tap-gui." + data.values.TAP_INGRESS_DOMAIN
+        origin: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
+    catalog:
+      locations:
+        - type: url
+          target: #@ data.values.CATALOG_URL
 
 metadata_store:
   ingress_enabled: true
@@ -50,16 +55,20 @@ grype:
   targetImagePullSecret: "tap-registry"
 
 learningcenter:
-  ingressDomain: #@ "learning." + data.values.TAP_INGRESS_DOMAIN
+  ingressDomain: #@ "learning." + data.values.INGRESS_DOMAIN
   imageRegistry:
     username: #@ data.values.HARBOR_REGISTRY_USERNAME
     password: #@ data.values.HARBOR_REGISTRY_PASSWORD
     host: #@ data.values.HARBOR_REGISTRY_HOST
 
 cnrs:
-  domain_name: #@ data.values.TAP_INGRESS_DOMAIN
+  domain_name: #@ data.values.INGRESS_DOMAIN
 
 contour:
   envoy:
     service:
       type: LoadBalancer
+
+accelerator:
+  samples:
+    include: true

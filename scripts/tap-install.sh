@@ -1,18 +1,19 @@
-#!/bin/bash -e
+#!/bin/bash
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
 
-if [[ -f "${DIR}/env" ]]; then
-    echo "env file exists"
-    source ${DIR}/env
-elif [[ -f "${DIR}/.envrc" ]]; then
-    echo ".envrc file found"
-    source ${DIR}/.envrc
-else
-    echo "could not find the env or .envrc file, exiting"
-    exit 1
+if [[ -z ${ENV} ]]; then
+   echo "Please supply the variable ENV and ensure you have the file ${DIR}/ENV-env in this directory. Use the scripts/env template to build your version"
+   exit 1
 fi
+
+if [[ ! -f ${DIR}/${ENV}-env ]]; then
+   echo "Ensure you have the file ${DIR}/${ENV}-env in this directory. Use the scripts/env template to build your version"
+   exit 1
+fi
+
+source ${DIR}/${ENV}-env
 
 install_tanzu_plugins() {
    pushd ${TANZU_CLI_DIR}
@@ -79,12 +80,12 @@ stage_for_tap_install() {
    tanzu package available list --namespace tap-install
 
    ytt -f ${BASE_DIR}/template/tap-values-template.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${HARBOR_CA_CERT_PATH} > ${BASE_DIR}/config/tap-values.yaml
+      --data-value-file harbor.certificate=${HARBOR_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values.yaml
 }
 
 install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
-      -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/tap-values.yaml \
+      -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/${ENV}-tap-values.yaml \
       -n tap-install
 }
 

@@ -18,3 +18,4 @@ export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deployin
 
 export TAP_VERSION=1.2.0                    # TAP version
 export TAP_PROFILE=                         # light or full
+export TAP_CATALOG_URL=                     # TAP blank catalog git location

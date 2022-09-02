@@ -1,17 +1,16 @@
-#!/bin/bash -e
+#!/bin/bash -x
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
 
-if [[ -f "${DIR}/env" ]]; then
-    echo "env file exists"
-    source ${DIR}/env
-elif [[ -f "${DIR}/.envrc" ]]; then
-    echo ".envrc file found"
-    source ${DIR}/.envrc
-else
-    echo "could not find the env or .envrc file, exiting"
-    exit 1
+if [[ -z ${ENV} ]]; then
+   echo "Please supply the variable ENV and ensure you have the file ${DIR}/ENV-env in this directory. Use the scripts/env template to build your version"
+   exit 1
+fi
+
+if [[ ! -f ${DIR}/${ENV}-env ]]; then
+   echo "Ensure you have the file ${DIR}/${ENV}-env in this directory. Use the scripts/env template to build your version"
+   exit 1
 fi
 
 uninstall_tap() {
