@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
@@ -12,6 +12,8 @@ if [[ ! -f ${DIR}/${ENV}-env ]]; then
    echo "Ensure you have the file ${DIR}/${ENV}-env in this directory. Use the scripts/env template to build your version"
    exit 1
 fi
+
+source ${DIR}/${ENV}-env
 
 uninstall_tap() {
     tanzu package installed delete tap -n tap-install -y

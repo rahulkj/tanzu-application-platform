@@ -79,13 +79,23 @@ stage_for_tap_install() {
 
    tanzu package available list --namespace tap-install
 
-   ytt -f ${BASE_DIR}/template/tap-values-template.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${HARBOR_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values.yaml
+
+   ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-tap-values.yaml";
+      cat ${BASE_DIR}/template/tap-values-template.yaml
+      echo "EOF";
+   ) >${BASE_DIR}/config/temp.yml
+   . ${BASE_DIR}/config/temp.yml
+   cat ${BASE_DIR}/config/${ENV}-tap-values.yaml
+
+   rm ${BASE_DIR}/config/temp.yml
+   
+   ytt -f ${BASE_DIR}/config/${ENV}-tap-values.yaml --data-values-env TAP \
+      --data-value-file harbor.certificate=${HARBOR_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
 }
 
 install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
-      -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/${ENV}-tap-values.yaml \
+      -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/${ENV}-tap-values-final.yaml \
       -n tap-install
 }
 
