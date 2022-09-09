@@ -26,7 +26,7 @@ shared:
 ootb_supply_chain_basic:
   registry:
     server: #@ data.values.HARBOR_REGISTRY_HOST
-    repository: #@ data.values.HARBOR_PROJECT
+    repository: #@ data.values.HARBOR_SUPPLY_CHAIN_PROJECT
     ca_cert_data: |
 $(awk '{printf "      %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
 

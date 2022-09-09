@@ -15,7 +15,29 @@ fi
 
 source ${DIR}/${ENV}-env
 
+validate_all_arguments() {
+   for var in "$@"
+   do
+      echo "$var"
+      if [[ -z ${var} ]]; then
+         echo "${var} Not set"
+         exit 1
+      fi
+   done
+
+   if [[ ! -d ${TANZU_CLI_DIR} ]]; then
+      echo "Tanzu CLI Directory: ${TANZU_CLI_DIR} does not exist."
+      exit 1
+   fi
+
+   if [[ ! -d ${TANZU_ESSENTIALS_DIR} ]]; then
+      echo "Tanzu Essentials Directory: ${TANZU_ESSENTIALS_DIR} does not exist."
+      exit 1
+   fi
+}
+
 install_tanzu_plugins() {
+
    pushd ${TANZU_CLI_DIR}
       export TANZU_CLI_NO_INIT=true
       tanzu plugin install all -l .
@@ -48,9 +70,9 @@ install_tkg_essentials() {
 }
 
 copy_images_to_registry() {
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
    export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
    export TAP_VERSION=${TAP_VERSION}
 
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
@@ -59,9 +81,9 @@ copy_images_to_registry() {
 }
 
 stage_for_tap_install() {
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
    export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
    export TAP_VERSION=${TAP_VERSION}
 
    kubectl create ns tap-install
@@ -85,7 +107,6 @@ stage_for_tap_install() {
       echo "EOF";
    ) >${BASE_DIR}/config/temp.yml
    . ${BASE_DIR}/config/temp.yml
-   cat ${BASE_DIR}/config/${ENV}-tap-values.yaml
 
    rm ${BASE_DIR}/config/temp.yml
    
@@ -99,10 +120,78 @@ install_tap() {
       -n tap-install
 }
 
-install_tanzu_plugins
-docker_login_to_tanzunet
-configure_psp_for_tkgs
-install_tkg_essentials
-copy_images_to_registry
-stage_for_tap_install
-install_tap
+setup_dev_namespace() {
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
+   export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
+   export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
+
+   kubectl create ns ${TAP_DEV_NAMESPACE}
+
+   tanzu secret registry add tap-registry \
+   --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
+   --server ${INSTALL_REGISTRY_HOSTNAME} \
+   --export-to-all-namespaces --yes --namespace ${TAP_DEV_NAMESPACE}
+
+   tanzu secret registry add registry-credentials \
+   --server ${INSTALL_REGISTRY_HOSTNAME} \
+   --username ${INSTALL_REGISTRY_USERNAME} \
+   --password ${INSTALL_REGISTRY_PASSWORD} \
+   --namespace ${TAP_DEV_NAMESPACE}
+
+cat <<EOF | kubectl -n ${TAP_DEV_NAMESPACE} apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tap-registry
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: e30K
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+secrets:
+  - name: registry-credentials
+imagePullSecrets:
+  - name: registry-credentials
+  - name: tap-registry
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-deliverable
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-workload
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
+subjects:
+  - kind: ServiceAccount
+    name: default
+EOF
+
+}
+
+validate_all_arguments
+# install_tanzu_plugins
+# docker_login_to_tanzunet
+# configure_psp_for_tkgs
+# install_tkg_essentials
+# copy_images_to_registry
+# stage_for_tap_install
+# install_tap
+setup_dev_namespace

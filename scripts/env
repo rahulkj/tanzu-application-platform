@@ -13,9 +13,12 @@ export TAP_HARBOR_REGISTRY_HOST=            # Harbor Registry host, ex: harbor.e
 export TAP_HARBOR_PROJECT=                  # Harbor Registry project to use, ex: tanzu
 export TAP_HARBOR_REPOSITORY=               # Harbor Registry build service repository to use, ex: build-service
 export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
+export TAP_HARBOR_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
 
 export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deploying contour
 
 export TAP_VERSION=1.2.0                    # TAP version
 export TAP_PROFILE=                         # light or full
 export TAP_CATALOG_URL=                     # TAP blank catalog git location
+
+export DEV_NAMESPACE=                       # Namespace to enable for tanzu workloads
