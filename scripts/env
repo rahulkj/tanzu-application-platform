@@ -15,6 +15,13 @@ export TAP_HARBOR_REPOSITORY=               # Harbor Registry build service repo
 export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
 export TAP_HARBOR_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
 
+export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
+
+export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
+export GIT_URL=https://github.com
+export GIT_USERNAME=                        # Git Username
+export GIT_PASSWORD=                        # Git user token
+
 export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deploying contour
 
 export TAP_VERSION=1.2.0                    # TAP version

@@ -31,7 +31,7 @@ ootb_supply_chain_basic:
 $(awk '{printf "      %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
 
   gitops:
-    ssh_secret: ""
+    ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 
 tap_gui:
   service_type: ClusterIP

@@ -138,6 +138,10 @@ setup_dev_namespace() {
    --password ${INSTALL_REGISTRY_PASSWORD} \
    --namespace ${TAP_DEV_NAMESPACE}
 
+   ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+
+   kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+
 cat <<EOF | kubectl -n ${TAP_DEV_NAMESPACE} apply -f -
 apiVersion: v1
 kind: Secret
