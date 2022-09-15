@@ -9,8 +9,6 @@ buildservice:
   kp_default_repository: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_PROJECT + "/" + data.values.HARBOR_REPOSITORY
   kp_default_repository_username: #@ data.values.HARBOR_REGISTRY_USERNAME
   kp_default_repository_password: #@ data.values.HARBOR_REGISTRY_PASSWORD
-  tanzunet_username: #@ data.values.TANZU_REGISTRY_USERNAME
-  tanzunet_password: #@ data.values.TANZU_REGISTRY_PASSWORD
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
 
