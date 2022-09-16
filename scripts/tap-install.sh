@@ -138,10 +138,6 @@ setup_dev_namespace() {
    --password ${INSTALL_REGISTRY_PASSWORD} \
    --namespace ${TAP_DEV_NAMESPACE}
 
-   ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
-
-   kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
-
 cat <<EOF | kubectl -n ${TAP_DEV_NAMESPACE} apply -f -
 apiVersion: v1
 kind: Secret
@@ -190,6 +186,13 @@ EOF
 
 }
 
+function setup_git_secrets() {
+   if [[ (! -z ${GIT_USERNAME}) && (! -z ${GIT_PASSWORD}) && (! -z ${GIT_URL} ) ]]; then
+      ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+      kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+   fi
+}
+
 validate_all_arguments
 install_tanzu_plugins
 docker_login_to_tanzunet
@@ -199,3 +202,4 @@ copy_images_to_registry
 stage_for_tap_install
 install_tap
 setup_dev_namespace
+setup_git_secrets
