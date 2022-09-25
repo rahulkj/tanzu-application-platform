@@ -188,8 +188,12 @@ EOF
 
 function setup_git_secrets() {
    if [[ (! -z ${GIT_USERNAME}) && (! -z ${GIT_PASSWORD}) && (! -z ${GIT_URL} ) ]]; then
-      ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
-      kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+      export GIT_PASSWORD=${GIT_PASSWORD}
+      kp secret create ${GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
+         --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
+         --namespace ${DEV_NAMESPACE}
+      # ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+      # kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
    fi
 }
 
