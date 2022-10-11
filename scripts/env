@@ -1,7 +1,7 @@
 export TANZU_NETWORK_TOKEN=     # Optional - Tanzu network token (Pivnet token)
 export TANZU_DOWNLOADS_DIR=     # Optional - Download directory for the packages
 
-export TANZU_CLI_DIR=           # Directory where you have unpacked the tanzu cli (https://docs.vmware.com/en/Tanzu-Application-Platform/1.2/tap/GUID-install-tanzu-cli.html)
+export TANZU_CLI_DIR=           # Directory where you have unpacked the tanzu cli (https://network.tanzu.vmware.com/products/tanzu-application-platform/)
 export TANZU_ESSENTIALS_DIR=    # Directory where you have unpacked the tanzu cluster essentials (https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/). Choose amd64 or darwin, based on where you are running this from
 export HARBOR_CA_CERT_PATH=     # Directory where you have your harbor certificate downloaded. ex: /Users/john/Downloads/harbor.pem
 

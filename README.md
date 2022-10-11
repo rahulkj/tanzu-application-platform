@@ -6,7 +6,7 @@ Scripts to setup Tanzu Application Platform
 * Ensure you have a TKGm/s cluster deployed
 * Download the required cli's
   * [Tanzu cluster essentials](https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/) Choose `amd64` or `darwin`, based on where you are running this from
-  * [Tanzu cli](https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-tanzu-cli.html)
+  * [tanzu-cli](https://network.tanzu.vmware.com/products/tanzu-application-platform/)
   * Harbor is setup and you have downloaded the certificate
 
 
@@ -14,7 +14,10 @@ Scripts to setup Tanzu Application Platform
 
 * Update the file `./scripts/env` to point to the right directories those have clis, certificate staged
     ```
-        export TANZU_CLI_DIR=           # Directory where you have unpacked the tanzu cli (https://docs.vmware.com/en/Tanzu-Application-Platform/1.1/tap/GUID-install-tanzu-cli.html)
+        export TANZU_NETWORK_TOKEN=     # Optional - Tanzu network token (Pivnet token)
+        export TANZU_DOWNLOADS_DIR=     # Optional - Download directory for the packages
+
+        export TANZU_CLI_DIR=           # Directory where you have unpacked the tanzu cli (https://network.tanzu.vmware.com/products/tanzu-application-platform/)
         export TANZU_ESSENTIALS_DIR=    # Directory where you have unpacked the tanzu cluster essentials (https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/). Choose amd64 or darwin, based on where you are running this from
         export HARBOR_CA_CERT_PATH=     # Directory where you have your harbor certificate downloaded. ex: /Users/john/Downloads/harbor.pem
 
@@ -29,11 +32,24 @@ Scripts to setup Tanzu Application Platform
         export TAP_HARBOR_PROJECT=                  # Harbor Registry project to use, ex: tanzu
         export TAP_HARBOR_REPOSITORY=               # Harbor Registry build service repository to use, ex: build-service
         export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
+        export TAP_HARBOR_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
+
+        export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
+
+        export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
+        export GIT_URL=https://github.com
+        export GIT_USERNAME=                        # Git Username
+        export GIT_PASSWORD=                        # Git user token
+        export K8S_SERVICE_ACCOUNT=default          # Set the service account name to which the credentials need to be bound to
 
         export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deploying contour
 
-        export TAP_VERSION=1.1.0                    # TAP version
+        export TAP_VERSION=1.2.0                    # TAP version
+        export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
+        export TAP_PROFILE=                         # light or full
+        export TAP_CATALOG_URL=                     # TAP blank catalog git location
 
+        export DEV_NAMESPACE=                       # Namespace to enable for tanzu workloads
     ```
 
 ## Install Tanzu Cluster essentials and TAP
