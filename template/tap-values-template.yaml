@@ -3,14 +3,21 @@
 
 profile: #@ data.values.PROFILE
 
+shared:
+  ingress_domain: #@ data.values.INGRESS_DOMAIN
+  image_registry:
+    project_path: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_SUPPLY_CHAIN_PROJECT
+    username: #@ data.values.HARBOR_REGISTRY_USERNAME
+    password: #@ data.values.HARBOR_REGISTRY_PASSWORD
+  ca_cert_data: |
+$(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
+
 ceip_policy_disclosed: true
 
 buildservice:
   kp_default_repository: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_PROJECT + "/" + data.values.HARBOR_REPOSITORY
   kp_default_repository_username: #@ data.values.HARBOR_REGISTRY_USERNAME
   kp_default_repository_password: #@ data.values.HARBOR_REGISTRY_PASSWORD
-  ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
 
 cartographer:
   ca_cert_data: |
@@ -18,16 +25,10 @@ $(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
 
 supply_chain: basic
 
-shared:
-  ingress_domain: #@ data.values.INGRESS_DOMAIN
-
 ootb_supply_chain_basic:
   registry:
     server: #@ data.values.HARBOR_REGISTRY_HOST
     repository: #@ data.values.HARBOR_SUPPLY_CHAIN_PROJECT
-    ca_cert_data: |
-$(awk '{printf "      %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
-
   gitops:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 

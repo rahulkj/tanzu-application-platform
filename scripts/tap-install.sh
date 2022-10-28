@@ -297,11 +297,11 @@ function setup_git_secrets() {
 check_for_required_clis
 validate_all_arguments
 prompt_user_kubernetes_login
-install_tanzu_plugins
-docker_login_to_tanzunet
-configure_psp_for_tkgs
-install_tkg_essentials
-copy_images_to_registry
+# install_tanzu_plugins
+# docker_login_to_tanzunet
+# configure_psp_for_tkgs
+# install_tkg_essentials
+# copy_images_to_registry
 stage_for_tap_install
 install_tap
 setup_dev_namespace
