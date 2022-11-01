@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
@@ -286,22 +286,20 @@ EOF
 function setup_git_secrets() {
    if [[ (! -z ${GIT_USERNAME}) && (! -z ${GIT_PASSWORD}) && (! -z ${GIT_URL} ) ]]; then
       export GIT_PASSWORD=${GIT_PASSWORD}
-      kp secret create ${GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
-         --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
-         --namespace ${DEV_NAMESPACE}
-      # ytt -f ${BASE_DIR}/template/secrets-template.yaml --data-values-env GIT > ${BASE_DIR}/config/${ENV}-secrets-final.yaml
-      # kubectl apply -f ${BASE_DIR}/config/${ENV}-secrets-final.yaml
+      kp secret create ${TAP_GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
+      --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
+      --namespace ${TAP_DEV_NAMESPACE}
    fi
 }
 
 check_for_required_clis
 validate_all_arguments
 prompt_user_kubernetes_login
-# install_tanzu_plugins
-# docker_login_to_tanzunet
-# configure_psp_for_tkgs
-# install_tkg_essentials
-# copy_images_to_registry
+install_tanzu_plugins
+docker_login_to_tanzunet
+configure_psp_for_tkgs
+install_tkg_essentials
+copy_images_to_registry
 stage_for_tap_install
 install_tap
 setup_dev_namespace
