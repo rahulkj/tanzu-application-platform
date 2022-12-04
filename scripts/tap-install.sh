@@ -16,7 +16,7 @@ fi
 source ${DIR}/${ENV}-env
 
 check_for_required_clis() {
-   CLIS=(pivnet kp tanzu docker kubectl ytt)
+   CLIS=(pivnet kp docker kubectl ytt)
    MISSING=false
 
    for cli in "${CLIS[@]}"; do
@@ -136,6 +136,9 @@ download_tanzu_application_platform() {
 
 install_tanzu_plugins() {
    pushd ${TANZU_CLI_DIR}
+      TANZU_CLI_PATH=$(find . -name tanzu-core*)
+      cp ${TANZU_CLI_PATH} /usr/local/bin/tanzu
+
       export TANZU_CLI_NO_INIT=true
       tanzu plugin install all -l .
    popd

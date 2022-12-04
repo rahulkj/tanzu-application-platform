@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -e
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
@@ -16,7 +16,7 @@ fi
 source ${DIR}/${ENV}-env
 
 check_for_required_clis() {
-   CLIS=(pivnet kp tanzu docker kubectl ytt)
+   CLIS=(pivnet docker kubectl ytt)
    MISSING=false
 
    for cli in "${CLIS[@]}"; do
@@ -122,9 +122,9 @@ download_tanzu_application_platform() {
    fi
 
    if [[ "${OS}" == "Linux" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-linux-amd64.tar
+      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-linux-amd64-*.*.tar
    elif [[ "${OS}" == "Darwin" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-darwin-amd64.tar
+      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-darwin-amd64-*.*.tar
    fi
    mv tanzu-framework-* ${TANZU_DOWNLOADS_DIR}/
    pushd ${TANZU_DOWNLOADS_DIR}
@@ -136,6 +136,16 @@ download_tanzu_application_platform() {
 
 docker_login_to_tanzunet() {
    docker login registry.tanzu.vmware.com -u ${TAP_TANZU_REGISTRY_USERNAME} -p ${TAP_TANZU_REGISTRY_PASSWORD}
+}
+
+install_tanzu_plugins() {
+   pushd ${TANZU_CLI_DIR}
+      TANZU_CLI_PATH=$(find . -name tanzu-core*)
+      cp ${TANZU_CLI_PATH} /usr/local/bin/tanzu
+
+      export TANZU_CLI_NO_INIT=true
+      tanzu plugin install all -l .
+   popd
 }
 
 copy_images_to_registry() {
@@ -159,12 +169,13 @@ update_package_repository() {
    export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
    export TAP_VERSION=${TAP_VERSION}
+   export TAP_REGISTRY_NAME=tanzu-tap-repository-${TAP_VERSION}
 
-   tanzu package repository update tanzu-tap-repository \
+   tanzu package repository add ${TAP_REGISTRY_NAME} \
    --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_HARBOR_PROJECT}/${TAP_HARBOR_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
    --namespace tap-install
 
-   tanzu package repository get tanzu-tap-repository --namespace tap-install
+   tanzu package repository get ${TAP_REGISTRY_NAME} --namespace tap-install
 
    tanzu package available list --namespace tap-install
 }
@@ -191,6 +202,7 @@ upgrade_tap() {
 check_for_required_clis
 validate_all_arguments
 prompt_user_kubernetes_login
+install_tanzu_plugins
 docker_login_to_tanzunet
 patch_lifecycle_image
 copy_images_to_registry
