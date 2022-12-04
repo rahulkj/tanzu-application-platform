@@ -39,7 +39,6 @@ Scripts to setup Tanzu Application Platform
         export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
         export TAP_PROFILE=                         # light or full
         export TAP_CATALOG_URL=                     # TAP blank catalog git location
-        export TAP_PROFILE=light
 
         export TAP_DEV_NAMESPACE=                   # Namespace to enable for tanzu workloads
         export TAP_PACKAGES_IMAGE_SHA=registry.tanzu.vmware.com/tanzu-application-platform/tap-packages@sha256:851d49d1a9786d6b3fa17fa5d669dbbb687e23d047e6c08165d629603f0d70ec
