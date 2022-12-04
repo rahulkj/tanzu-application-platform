@@ -17,20 +17,20 @@ export TAP_HARBOR_PROJECT=                  # Harbor Registry project to use, ex
 export TAP_HARBOR_REPOSITORY=               # Harbor Registry build service repository to use, ex: build-service
 export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
 export TAP_HARBOR_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
-
-export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
-
-export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
-export GIT_URL=https://github.com
-export GIT_USERNAME=                        # Git Username
-export GIT_PASSWORD=                        # Git user token
-export K8S_SERVICE_ACCOUNT=default          # Set the service account name to which the credentials need to be bound to
-
 export TAP_TAP_INGRESS_DOMAIN=              # Ingress domain to use for deploying contour
 
 export TAP_VERSION=1.2.0                    # TAP version
 export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
 export TAP_PROFILE=                         # light or full
 export TAP_CATALOG_URL=                     # TAP blank catalog git location
+export TAP_PROFILE=light
 
-export DEV_NAMESPACE=                       # Namespace to enable for tanzu workloads
+export TAP_DEV_NAMESPACE=                   # Namespace to enable for tanzu workloads
+export TAP_PACKAGES_IMAGE_SHA=registry.tanzu.vmware.com/tanzu-application-platform/tap-packages@sha256:851d49d1a9786d6b3fa17fa5d669dbbb687e23d047e6c08165d629603f0d70ec
+
+export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
+export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
+export GIT_URL=https://github.com
+export GIT_USERNAME=                        # Git Username
+export GIT_PASSWORD=                        # Git user token
+export K8S_SERVICE_ACCOUNT=default          # Set the service account name to which the credentials need to be bound to
