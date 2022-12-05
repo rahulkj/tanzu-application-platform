@@ -159,11 +159,6 @@ copy_images_to_registry() {
       --registry-ca-cert-path ${HARBOR_CA_CERT_PATH}
 }
 
-patch_lifecycle_image() {
-   kp lifecycle patch -i ${TAP_PACKAGES_IMAGE_SHA}
-
-}
-
 update_package_repository() {
    export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
    export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
@@ -204,7 +199,6 @@ validate_all_arguments
 prompt_user_kubernetes_login
 install_tanzu_plugins
 docker_login_to_tanzunet
-patch_lifecycle_image
 copy_images_to_registry
 update_package_repository
 generate_tap_values

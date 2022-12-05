@@ -10,7 +10,7 @@ shared:
     username: #@ data.values.HARBOR_REGISTRY_USERNAME
     password: #@ data.values.HARBOR_REGISTRY_PASSWORD
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
+$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
 
 ceip_policy_disclosed: true
 
@@ -21,7 +21,7 @@ buildservice:
 
 cartographer:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
+$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
 
 supply_chain: basic
 
@@ -81,5 +81,5 @@ accelerator:
 
 source_controller:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TKG_HARBOR_CA_LOCATION)
+$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
 
