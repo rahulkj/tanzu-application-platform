@@ -1,3 +1,4 @@
+export ENV=                     # Provide the prefix to your ${ENV}-env file
 export TANZU_NETWORK_TOKEN=     # Optional - Tanzu network token (Pivnet token)
 export TANZU_DOWNLOADS_DIR=     # Optional - Download directory for the packages
 

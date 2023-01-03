@@ -95,10 +95,11 @@ download_tanzu_essentials() {
    fi
 
    if [[ "${OS}" == "Linux" ]]; then
-      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob=tanzu-cluster-essentials-linux-amd64-*.tgz
+      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-linux-amd64-*.tgz'
    elif [[ "${OS}" == "Darwin" ]]; then
-      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob=tanzu-cluster-essentials-darwin-amd64-*.tgz
+      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-darwin-amd64-*.tgz'
    fi
+
    mv tanzu-cluster-essentials-* ${TANZU_DOWNLOADS_DIR}/
 
    pushd ${TANZU_DOWNLOADS_DIR}
@@ -122,9 +123,9 @@ download_tanzu_application_platform() {
    fi
 
    if [[ "${OS}" == "Linux" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-linux-amd64.tar
+      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-framework-linux-amd64-*.tar'
    elif [[ "${OS}" == "Darwin" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob=tanzu-framework-darwin-amd64.tar
+      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-framework-darwin-amd64-*.tar'
    fi
    mv tanzu-framework-* ${TANZU_DOWNLOADS_DIR}/
    pushd ${TANZU_DOWNLOADS_DIR}
@@ -153,11 +154,27 @@ configure_psp_for_tkgs(){
 }
 
 install_tkg_essentials() {
-   kubectl create namespace kapp-controller
+   echo "**** Executing install_tkg_essentials ****"
 
-   kubectl create secret generic kapp-controller-config \
-      --namespace kapp-controller \
-      --from-file caCerts=${HARBOR_CA_CERT_PATH}
+   NAMESPACE_EXISTS=$(kubectl get namespace | grep "kapp-controller")
+
+   if [[ -z "${NAMESPACE_EXISTS}" ]]; then
+      echo "Creating namespace: kapp-controller, as it does not exist"
+      kubectl create namespace kapp-controller
+   else
+      echo "Skipping create of the namespace: kapp-controller, as it already exists"
+   fi
+
+   SECRET_EXISTS=$(kubectl create secret --namespace kapp-controller | grep "kapp-controller-config")
+   if [[ -z "${SECRET_EXISTS}" ]]; then
+      echo "Creating secret: kapp-controller-config, as it does not exist"
+
+      kubectl create secret generic kapp-controller-config \
+         --namespace kapp-controller \
+         --from-file caCerts=${REGISTRY_CA_CERT_PATH}
+   else
+      echo "Skipping create of the secret: kapp-controller-config, as it already exists"
+   fi
 
    pushd ${TANZU_ESSENTIALS_DIR}
       export INSTALL_BUNDLE=${TANZU_ESSENTIALS_BUNDLE}
