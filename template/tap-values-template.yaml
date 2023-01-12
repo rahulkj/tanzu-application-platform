@@ -36,12 +36,6 @@ tap_gui:
   service_type: ClusterIP
   ingressEnabled: "true"
   app_config:
-    app:
-      baseUrl: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
-    backend:
-      baseUrl: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
-      cors:
-        origin: #@ "http://tap-gui." + data.values.INGRESS_DOMAIN
     catalog:
       locations:
         - type: url
