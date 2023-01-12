@@ -3,6 +3,9 @@
 
 profile: #@ data.values.PROFILE
 
+excluded_packages:
+- policy.apps.tanzu.vmware.com
+
 shared:
   ingress_domain: #@ data.values.INGRESS_DOMAIN
   image_registry:
@@ -54,24 +57,25 @@ grype:
   namespace: "tap-install"
   targetImagePullSecret: "tap-registry"
 
-learningcenter:
-  ingressDomain: #@ "learning." + data.values.INGRESS_DOMAIN
-  imageRegistry:
-    username: #@ data.values.HARBOR_REGISTRY_USERNAME
-    password: #@ data.values.HARBOR_REGISTRY_PASSWORD
-    host: #@ data.values.HARBOR_REGISTRY_HOST
-
-cnrs:
-  domain_name: #@ data.values.INGRESS_DOMAIN
-
 contour:
   envoy:
     service:
       type: LoadBalancer
 
 accelerator:
+  ingress:
+    include: true
+    enable_tls: false
   samples:
     include: true
+
+appliveview:
+  ingressEnabled: true
+
+appliveview_connector:
+  backend:
+    ingressEnabled: true
+    sslDisabled: false
 
 source_controller:
   ca_cert_data: |
