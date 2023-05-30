@@ -150,31 +150,82 @@ docker_login_to_tanzunet() {
 }
 
 configure_psp_for_tkgs(){
-   kubectl create clusterrolebinding default-tkg-admin-privileged-binding --clusterrole=psp:vmware-system-privileged --group=system:authenticated
+   set +e
+   CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep ${CLUSTER_ROLE_BINDING_NAME})
+   set -e
+
+   if [[ -z "${CRB_EXISTS}" ]]; then
+      echo "Creating the clusterrolebinding : ${CLUSTER_ROLE_BINDING_NAME}, as it does not exist"
+      kubectl create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --clusterrole=psp:vmware-system-privileged --group=system:authenticated
+   else
+      echo "Skipping creation of the clusterrolebinding : ${CLUSTER_ROLE_BINDING_NAME}, as it already exists"
+   fi
 }
 
-create_kapp_controller_secret_only() {
-   echo "**** Executing create_kapp_controller_secret_only ****"
+setup_kapp_controller() {
+   echo "**** Executing setup_kapp_controller ****"
 
-   DOES_KAPP_CONTROLLER_EXIT=$(kubectl get po -A | grep kapp-controller- | awk '{split($0,a," "); print a[1]}')
+   KAPP_CONTROLLER_EXIST=$(kubectl get po -A | grep kapp-controller- | awk '{split($0,a," "); print a[1]}')
 
-   if [[ ! -z "${DOES_KAPP_CONTROLLER_EXIT}" ]]; then
+   if [[ ! -z "${KAPP_CONTROLLER_EXIST}" ]]; then
       set +e
-      SECRET_EXISTS=$(kubectl get secret --namespace "${DOES_KAPP_CONTROLLER_EXIT}" | grep "kapp-controller-config")
+      SECRET_EXISTS=$(kubectl get secret --namespace "${KAPP_CONTROLLER_EXIST}" | grep "kapp-controller-config")
       set -e
 
       if [[ -z "${SECRET_EXISTS}" ]]; then
          echo "Creating secret: kapp-controller-config, as it does not exist"
 
          kubectl create secret generic kapp-controller-config \
-            --namespace ${DOES_KAPP_CONTROLLER_EXIT} \
+            --namespace ${KAPP_CONTROLLER_EXIST} \
             --from-file caCerts=${REGISTRY_CA_CERT_PATH}
       else
          echo "Skipping create of the secret: kapp-controller-config, as it already exists"
       fi
+   else
+      echo "*** Provision kapp_controller, as it does not exist in any other namespace ***"
+      create_kapp_controller_namespace
+      create_kapp_controller_secret
+      install_tkg_essentials
    fi
 
-   echo "**** Done executing create_kapp_controller_secret_only ****"
+   echo "**** Done executing setup_kapp_controller ****"
+}
+
+create_kapp_controller_namespace() {
+   echo "**** Executing create_kapp_controller_namespace ****"
+
+   set +e
+   NAMESPACE_EXISTS=$(kubectl get namespace | grep "kapp-controller")
+   set -e
+
+   if [[ -z "${NAMESPACE_EXISTS}" ]]; then
+      echo "Creating namespace: kapp-controller, as it does not exist"
+      kubectl create namespace kapp-controller
+   else
+      echo "Skipping create of the namespace: kapp-controller, as it already exists"
+   fi
+
+   echo "**** Done executing create_kapp_controller_namespace ****"
+}
+
+create_kapp_controller_secret() {
+   echo "**** Executing create_kapp_controller_secret ****"
+
+   set +e
+   SECRET_EXISTS=$(kubectl get secret --namespace kapp-controller | grep "kapp-controller-config")
+   set -e
+   
+   if [[ -z "${SECRET_EXISTS}" ]]; then
+      echo "Creating secret: kapp-controller-config, as it does not exist"
+
+      kubectl create secret generic kapp-controller-config \
+         --namespace kapp-controller \
+         --from-file caCerts=${REGISTRY_CA_CERT_PATH}
+   else
+      echo "Skipping create of the secret: kapp-controller-config, as it already exists"
+   fi
+
+   echo "**** Done executing create_kapp_controller_secret ****"
 }
 
 install_tkg_essentials() {
@@ -202,25 +253,42 @@ copy_images_to_registry() {
 }
 
 add_tap_repository() {
+   echo "**** Executing add_tap_repository ****"
+
    export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
    export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
    export TAP_VERSION=${TAP_VERSION}
 
-   kubectl create ns tap-install
+   set +e
+   NAMESPACE_EXISTS=$(kubectl get namespace | grep "${TAP_INSTALL_NAMESPACE}")
+   set -e
+
+   if [[ -z "${NAMESPACE_EXISTS}" ]]; then
+      echo "Creating namespace: ${TAP_INSTALL_NAMESPACE}, as it does not exist"
+      kubectl create namespace ${TAP_INSTALL_NAMESPACE}
+   else
+      echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
+   fi
 
    tanzu secret registry add tap-registry \
    --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
    --server ${INSTALL_REGISTRY_HOSTNAME} \
-   --export-to-all-namespaces --yes --namespace tap-install
+   --export-to-all-namespaces --yes --namespace ${TAP_INSTALL_NAMESPACE}
 
-   tanzu package repository add tanzu-tap-repository \
-   --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
-   --namespace tap-install
+   if [[ -z $(tanzu package repository list --namespace ${TAP_INSTALL_NAMESPACE} | grep  ${TAP_REPOSITORY_NAME}) ]]; then
+      tanzu package repository add ${TAP_REPOSITORY_NAME} \
+         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
+         --namespace ${TAP_INSTALL_NAMESPACE}
+   else
+      tanzu package repository update ${TAP_REPOSITORY_NAME} \
+         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
+         --namespace ${TAP_INSTALL_NAMESPACE}
+   fi
 
-   tanzu package repository get tanzu-tap-repository --namespace tap-install
+   tanzu package repository get ${TAP_REPOSITORY_NAME} --namespace ${TAP_INSTALL_NAMESPACE}
 
-   tanzu package available list --namespace tap-install
+   tanzu package available list --namespace ${TAP_INSTALL_NAMESPACE}
 }
 
 generate_tap_values() {
@@ -239,7 +307,7 @@ generate_tap_values() {
 install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
       -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/${ENV}-tap-values-final.yaml \
-      -n tap-install
+      -n ${TAP_INSTALL_NAMESPACE}
 }
 
 setup_dev_namespace() {
@@ -317,15 +385,14 @@ function setup_git_secrets() {
    fi
 }
 
-# check_for_required_clis
-# validate_all_arguments
-# prompt_user_kubernetes_login
-# install_tanzu_plugins
-# docker_login_to_tanzunet
-# configure_psp_for_tkgs
-# create_kapp_controller_secret_only
-# install_tkg_essentials
-# copy_images_to_registry
+check_for_required_clis
+validate_all_arguments
+prompt_user_kubernetes_login
+install_tanzu_plugins
+docker_login_to_tanzunet
+configure_psp_for_tkgs
+setup_kapp_controller
+copy_images_to_registry
 add_tap_repository
 generate_tap_values
 install_tap
