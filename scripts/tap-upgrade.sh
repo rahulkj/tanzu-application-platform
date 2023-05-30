@@ -149,25 +149,25 @@ install_tanzu_plugins() {
 }
 
 copy_images_to_registry() {
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
-   export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
-   export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
+   export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
+   export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
    export TAP_VERSION=${TAP_VERSION}
 
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-      --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_HARBOR_PROJECT}/${TAP_HARBOR_TAP_PACKAGES_REPOSITORY} \
-      --registry-ca-cert-path ${HARBOR_CA_CERT_PATH}
+      --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY} \
+      --registry-ca-cert-path ${REGISTRY_CA_CERT_PATH}
 }
 
 update_package_repository() {
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_HARBOR_REGISTRY_HOST}
-   export INSTALL_REGISTRY_USERNAME=${TAP_HARBOR_REGISTRY_USERNAME}
-   export INSTALL_REGISTRY_PASSWORD=${TAP_HARBOR_REGISTRY_PASSWORD}
+   export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
+   export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
+   export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
    export TAP_VERSION=${TAP_VERSION}
-   export TAP_REGISTRY_NAME=tanzu-tap-repository-${TAP_VERSION}
+   export TAP_REGISTRY_NAME=tanzu-tap-repository
 
    tanzu package repository add ${TAP_REGISTRY_NAME} \
-   --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_HARBOR_PROJECT}/${TAP_HARBOR_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
+   --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
    --namespace tap-install
 
    tanzu package repository get ${TAP_REGISTRY_NAME} --namespace tap-install
@@ -185,7 +185,7 @@ generate_tap_values() {
    rm ${BASE_DIR}/config/temp.yml
    
    ytt -f ${BASE_DIR}/config/${ENV}-tap-values.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${HARBOR_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
+      --data-value-file harbor.certificate=${REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
 }
 
 upgrade_tap() {

@@ -9,29 +9,29 @@ excluded_packages:
 shared:
   ingress_domain: #@ data.values.INGRESS_DOMAIN
   image_registry:
-    project_path: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_SUPPLY_CHAIN_PROJECT
-    username: #@ data.values.HARBOR_REGISTRY_USERNAME
-    password: #@ data.values.HARBOR_REGISTRY_PASSWORD
+    project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+    username: #@ data.values.INTERNAL_REGISTRY_USERNAME
+    password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
 
 ceip_policy_disclosed: true
 
 buildservice:
-  kp_default_repository: #@ data.values.HARBOR_REGISTRY_HOST + "/" + data.values.HARBOR_PROJECT + "/" + data.values.HARBOR_REPOSITORY
-  kp_default_repository_username: #@ data.values.HARBOR_REGISTRY_USERNAME
-  kp_default_repository_password: #@ data.values.HARBOR_REGISTRY_PASSWORD
+  kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
+  kp_default_repository_username: #@ data.values.INTERNAL_REGISTRY_USERNAME
+  kp_default_repository_password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
 
 cartographer:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
 
 supply_chain: basic
 
 ootb_supply_chain_basic:
   registry:
-    server: #@ data.values.HARBOR_REGISTRY_HOST
-    repository: #@ data.values.HARBOR_SUPPLY_CHAIN_PROJECT
+    server: #@ data.values.INTERNAL_REGISTRY_HOST
+    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
   gitops:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 
@@ -54,8 +54,8 @@ scanning:
     url: ""
 
 grype:
-  namespace: "tap-install"
-  targetImagePullSecret: "tap-registry"
+  namespace: #@ data.values.INSTALL_NAMESPACE
+  targetImagePullSecret: #@ data.values.REGISTRY_SECRET_NAME
 
 contour:
   envoy:
@@ -75,9 +75,8 @@ appliveview:
 appliveview_connector:
   backend:
     ingressEnabled: true
-    sslDisabled: false
+    sslDeactivated: false
 
 source_controller:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $HARBOR_CA_CERT_PATH)
-
+$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
