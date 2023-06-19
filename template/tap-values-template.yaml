@@ -3,19 +3,17 @@
 
 profile: #@ data.values.PROFILE
 
-excluded_packages:
-- policy.apps.tanzu.vmware.com
-
 shared:
   ingress_domain: #@ data.values.INGRESS_DOMAIN
   image_registry:
     project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
     username: #@ data.values.INTERNAL_REGISTRY_USERNAME
     password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
+  kubernetes_version: 1.24
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
 
-ceip_policy_disclosed: true
+ceip_policy_disclosed: TRUE
 
 buildservice:
   kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
@@ -26,14 +24,30 @@ cartographer:
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
 
-supply_chain: basic
+supply_chain: #@ data.values.SUPPLY_CHAIN
 
+#@ if data.values.SUPPLY_CHAIN == "basic":
 ootb_supply_chain_basic:
   registry:
     server: #@ data.values.INTERNAL_REGISTRY_HOST
     repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
   gitops:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
+#@ elif data.values.SUPPLY_CHAIN == "testing":
+ootb_supply_chain_testing:
+  registry:
+    server: #@ data.values.INTERNAL_REGISTRY_HOST
+    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+  gitops:
+    ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
+#@ elif data.values.SUPPLY_CHAIN == "testing_scanning":
+ootb_supply_chain_testing_scanning:
+  registry:
+    server: #@ data.values.INTERNAL_REGISTRY_HOST
+    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+  gitops:
+    ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
+#@ end
 
 tap_gui:
   service_type: ClusterIP

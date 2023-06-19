@@ -11,22 +11,31 @@ export TAP_TANZU_REGISTRY_HOST=registry.tanzu.vmware.com
 export TAP_TANZU_REGISTRY_USERNAME= # TanzuNet username
 export TAP_TANZU_REGISTRY_PASSWORD= # TanzuNet password
 
-export TAP_HARBOR_REGISTRY_USERNAME=        # Harbor Registry username
-export TAP_HARBOR_REGISTRY_PASSWORD=        # Harbor Registry password
-export TAP_HARBOR_REGISTRY_HOST=            # Harbor Registry host, ex: harbor.example.com
-export TAP_HARBOR_PROJECT=                  # Harbor Registry project to use, ex: tanzu
-export TAP_HARBOR_REPOSITORY=               # Harbor Registry build service repository to use, ex: build-service
-export TAP_HARBOR_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
-export TAP_HARBOR_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
-export TAP_INGRESS_DOMAIN=                  # Ingress domain to use for deploying contour
+export TAP_INTERNAL_REGISTRY_USERNAME=        # Harbor Registry username
+export TAP_INTERNAL_REGISTRY_PASSWORD=        # Harbor Registry password
+export TAP_INTERNAL_REGISTRY_HOST=            # Harbor Registry host, ex: harbor.example.com
+export TAP_INTERNAL_PROJECT=                  # Harbor Registry project to use, ex: tanzu
+export TAP_HARBOR_REPOSITORY=                 # Harbor Registry build service repository to use, ex: build-service
+export TAP_INTERNAL_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
+export TAP_INTERNAL_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
 
 export TAP_VERSION=1.2.0                    # TAP version
 export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
 export TAP_PROFILE=                         # light or full
+export TAP_INGRESS_DOMAIN=                  # Ingress domain to use for deploying contour
+export TAP_SUPPLY_CHAIN=                    # Can take basic, testing, testing_scanning
+
 export TAP_CATALOG_URL=                     # TAP blank catalog git location
 
+export TAP_INSTALL_NAMESPACE=tap-install
 export TAP_DEV_NAMESPACE=                   # Namespace to enable for tanzu workloads
+
 export TAP_PACKAGES_IMAGE_SHA=registry.tanzu.vmware.com/tanzu-application-platform/tap-packages@sha256:851d49d1a9786d6b3fa17fa5d669dbbb687e23d047e6c08165d629603f0d70ec
+
+export TAP_INTERNAL_REPOSITORY=tanzu-tap-repository
+export CLUSTER_ROLE_BINDING_NAME=default-tkg-admin-privileged-binding
+
+export TAP_REGISTRY_SECRET_NAME=tap-registry
 
 export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
 export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
