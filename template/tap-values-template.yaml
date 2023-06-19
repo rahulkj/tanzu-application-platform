@@ -9,7 +9,7 @@ shared:
     project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
     username: #@ data.values.INTERNAL_REGISTRY_USERNAME
     password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
-  kubernetes_version: 1.24
+  kubernetes_version: #@ data.values.KUBERNETES_VERSION
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
 

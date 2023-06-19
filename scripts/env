@@ -21,6 +21,8 @@ export TAP_INTERNAL_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, 
 
 export TAP_VERSION=1.2.0                    # TAP version
 export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
+export TAP_KUBERNETES_VERSION=1.24
+
 export TAP_PROFILE=                         # light or full
 export TAP_INGRESS_DOMAIN=                  # Ingress domain to use for deploying contour
 export TAP_SUPPLY_CHAIN=                    # Can take basic, testing, testing_scanning
