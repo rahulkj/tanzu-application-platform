@@ -156,7 +156,7 @@ copy_images_to_registry() {
 
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
       --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY} \
-      --registry-ca-cert-path ${REGISTRY_CA_CERT_PATH}
+      --registry-ca-cert-path ${INTERNAL_REGISTRY_CA_CERT_PATH}
 }
 
 update_package_repository() {
@@ -185,7 +185,7 @@ generate_tap_values() {
    rm ${BASE_DIR}/config/temp.yml
    
    ytt -f ${BASE_DIR}/config/${ENV}-tap-values.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
+      --data-value-file harbor.certificate=${INTERNAL_REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
 }
 
 upgrade_tap() {

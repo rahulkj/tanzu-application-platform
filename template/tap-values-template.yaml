@@ -11,7 +11,7 @@ shared:
     password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
   kubernetes_version: #@ data.values.KUBERNETES_VERSION
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
 ceip_policy_disclosed: TRUE
 
@@ -22,7 +22,7 @@ buildservice:
 
 cartographer:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
 supply_chain: #@ data.values.SUPPLY_CHAIN
 
@@ -93,4 +93,15 @@ appliveview_connector:
 
 source_controller:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+
+namespace_provisioner:
+  controller: true
+  import_data_values_secrets:
+  - name: #@ data.values.REGISTRY_SECRET_NAME
+    namespace: #@ data.values.INSTALL_NAMESPACE
+    create_export: true
+  overlay_secrets:
+  - name: #@ data.values.REGISTRY_SECRET_NAME + "-overlay"
+    namespace: #@ data.values.INSTALL_NAMESPACE
+    create_export: true

@@ -177,7 +177,7 @@ setup_kapp_controller() {
 
          kubectl create secret generic kapp-controller-config \
             --namespace ${KAPP_CONTROLLER_EXIST} \
-            --from-file caCerts=${REGISTRY_CA_CERT_PATH}
+            --from-file caCerts=${INTERNAL_REGISTRY_CA_CERT_PATH}
       else
          echo "Skipping create of the secret: kapp-controller-config, as it already exists"
       fi
@@ -220,7 +220,7 @@ create_kapp_controller_secret() {
 
       kubectl create secret generic kapp-controller-config \
          --namespace kapp-controller \
-         --from-file caCerts=${REGISTRY_CA_CERT_PATH}
+         --from-file caCerts=${INTERNAL_REGISTRY_CA_CERT_PATH}
    else
       echo "Skipping create of the secret: kapp-controller-config, as it already exists"
    fi
@@ -249,7 +249,7 @@ copy_images_to_registry() {
 
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
       --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY} \
-      --registry-ca-cert-path ${REGISTRY_CA_CERT_PATH}
+      --registry-ca-cert-path ${INTERNAL_REGISTRY_CA_CERT_PATH}
 }
 
 add_tap_repository() {
@@ -301,7 +301,7 @@ generate_tap_values() {
    rm ${BASE_DIR}/config/temp.yml
    
    ytt -f ${BASE_DIR}/config/${ENV}-tap-values.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
+      --data-value-file harbor.certificate=${INTERNAL_REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
 }
 
 install_tap() {
@@ -394,7 +394,7 @@ configure_psp_for_tkgs
 setup_kapp_controller
 copy_images_to_registry
 add_tap_repository
+setup_git_secrets
+setup_dev_namespace
 generate_tap_values
 install_tap
-setup_dev_namespace
-setup_git_secrets
