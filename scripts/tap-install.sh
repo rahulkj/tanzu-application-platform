@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
@@ -94,19 +94,16 @@ download_tanzu_essentials() {
       mkdir -p ${TANZU_DOWNLOADS_DIR}
    fi
 
-   if [[ "${OS}" == "Linux" ]]; then
-      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-linux-amd64-*.tgz'
-   elif [[ "${OS}" == "Darwin" ]]; then
-      pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-darwin-amd64-*.tgz'
-   fi
-
-   mv tanzu-cluster-essentials-* ${TANZU_DOWNLOADS_DIR}/
-
    pushd ${TANZU_DOWNLOADS_DIR}
+      if [[ "${OS}" == "Linux" ]]; then
+         pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-linux-amd64-*.tgz'
+      elif [[ "${OS}" == "Darwin" ]]; then
+         pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-darwin-amd64-*.tgz'
+      fi
+
       mkdir -p ${TANZU_ESSENTIALS_DIR}
-      cd ${TANZU_ESSENTIALS_DIR}
-         tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-*
-      cd ..
+      tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-* -C ${TANZU_ESSENTIALS_DIR}
+      rm ${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-*
    popd
 
    tanzu_network_logout
@@ -122,14 +119,16 @@ download_tanzu_application_platform() {
       mkdir -p ${TANZU_DOWNLOADS_DIR}
    fi
 
-   if [[ "${OS}" == "Linux" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-framework-linux-amd64-*.tar'
-   elif [[ "${OS}" == "Darwin" ]]; then
-      pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-framework-darwin-amd64-*.tar'
-   fi
-   mv tanzu-framework-* ${TANZU_DOWNLOADS_DIR}/
    pushd ${TANZU_DOWNLOADS_DIR}
-      tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-framework-*
+      if [[ "${OS}" == "Linux" ]]; then
+         pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-cli-linux-amd64.*.gz'
+      elif [[ "${OS}" == "Darwin" ]]; then
+         pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-cli-darwin-amd64.*.gz'
+      fi
+   
+      mkdir -p ${TANZU_CLI_DIR}
+      tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-cli-* -C ${TANZU_CLI_DIR}
+      rm ${TANZU_DOWNLOADS_DIR}/tanzu-cli-*
    popd
 
    tanzu_network_logout
@@ -137,11 +136,11 @@ download_tanzu_application_platform() {
 
 install_tanzu_plugins() {
    pushd ${TANZU_CLI_DIR}
-      TANZU_CLI_PATH=$(find . -name tanzu-core*)
+      TANZU_CLI_PATH=$(find . -name tanzu-cli-*)
       cp ${TANZU_CLI_PATH} /usr/local/bin/tanzu
 
       export TANZU_CLI_NO_INIT=true
-      tanzu plugin install all -l .
+      tanzu plugin install --group vmware-tap/default:v${TAP_VERSION}
    popd
 }
 
@@ -315,7 +314,13 @@ setup_dev_namespace() {
    export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
 
-   kubectl create ns ${TAP_DEV_NAMESPACE}
+   set +e
+   NAMESPACE_EXISTS=$(kubectl get namespace | grep "${TAP_DEV_NAMESPACE}")
+   set -e
+
+   if [[ -z "${NAMESPACE_EXISTS}" ]]; then
+      kubectl create ns ${TAP_DEV_NAMESPACE}
+   fi
 
    tanzu secret registry add tap-registry \
    --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
@@ -379,16 +384,23 @@ EOF
 function setup_git_secrets() {
    if [[ (! -z ${GIT_USERNAME}) && (! -z ${GIT_PASSWORD}) && (! -z ${GIT_URL} ) ]]; then
       export GIT_PASSWORD=${GIT_PASSWORD}
-      kp secret create ${TAP_GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
-      --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
-      --namespace ${TAP_DEV_NAMESPACE}
+
+      set +e
+      SECRET_EXISTS=$(kubectl get secret --namespace "${TAP_DEV_NAMESPACE}" | grep "${TAP_GITOPS_SSH_SECRET_NAME}")
+      set -e
+
+      if [[ -z "${SECRET_EXISTS}" ]]; then
+         kp secret create ${TAP_GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
+            --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
+            --namespace ${TAP_DEV_NAMESPACE}
+      fi
    fi
 }
 
 check_for_required_clis
 validate_all_arguments
-prompt_user_kubernetes_login
 install_tanzu_plugins
+prompt_user_kubernetes_login
 docker_login_to_tanzunet
 configure_psp_for_tkgs
 setup_kapp_controller

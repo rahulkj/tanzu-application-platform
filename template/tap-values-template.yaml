@@ -50,26 +50,22 @@ ootb_supply_chain_testing_scanning:
 #@ end
 
 tap_gui:
-  service_type: ClusterIP
-  ingressEnabled: "true"
+  metadataStoreAutoconfiguration: true
   app_config:
+    auth:
+      allowGuestAccess: true
     catalog:
       locations:
         - type: url
           target: #@ data.values.CATALOG_URL
 
 metadata_store:
-  ingress_enabled: true
   ns_for_export_app_cert: "*"
   app_service_type: ClusterIP
 
 scanning:
   metadataStore:
     url: ""
-
-grype:
-  namespace: #@ data.values.INSTALL_NAMESPACE
-  targetImagePullSecret: #@ data.values.REGISTRY_SECRET_NAME
 
 contour:
   envoy:
