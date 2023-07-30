@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/bin/bash -e
 
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
+
+source ${DIR}/common.sh
 
 if [[ -z ${ENV} ]]; then
    echo "Please supply the variable ENV and ensure you have the file ${DIR}/ENV-env in this directory. Use the scripts/env template to build your version"
@@ -16,13 +18,13 @@ fi
 source ${DIR}/${ENV}-env
 
 uninstall_tap() {
-    tanzu package installed delete tap -n tap-install -y
+    tanzu package installed delete tap -n ${TAP_INSTALL_NAMESPACE} -y
 
-    tanzu package repository delete tanzu-tap-repository -y
+    tanzu package repository delete ${TAP_REPOSITORY_NAME} -n ${TAP_INSTALL_NAMESPACE} -y
 
-    tanzu secret registry delete tap-registry -y
+    tanzu secret registry delete tap-registry -n ${TAP_INSTALL_NAMESPACE} -y
 
-    kubectl delete ns tap-install
+    kubectl delete ns ${TAP_INSTALL_NAMESPACE}
 }
 
 uninstall_tkg_essentials() {
@@ -39,9 +41,17 @@ uninstall_tkg_essentials() {
 }
 
 delete_psp_for_tkgs() {
-    kubectl delete clusterrolebinding default-tkg-admin-privileged-binding
+    set +e
+    CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep ${CLUSTER_ROLE_BINDING_NAME})
+    set -e
+
+    if [[ ! -z "${CRB_EXISTS}" ]]; then
+        kubectl delete clusterrolebinding default-tkg-admin-privileged-binding
+    fi
 }
 
-uninstall_tap
-uninstall_tkg_essentials
-delete_psp_for_tkgs
+
+logAndExecute prompt_user_kubernetes_login
+logAndExecute uninstall_tap
+logAndExecute uninstall_tkg_essentials
+logAndExecute delete_psp_for_tkgs

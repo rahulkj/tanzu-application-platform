@@ -3,6 +3,8 @@
 DIR=$(dirname "$(realpath ${0})")
 BASE_DIR=$(dirname ${DIR})
 
+source ${DIR}/common.sh
+
 if [[ -z ${ENV} ]]; then
    echo "Please supply the variable ENV and ensure you have the file ${DIR}/ENV-env in this directory. Use the scripts/env template to build your version"
    exit 1
@@ -15,140 +17,7 @@ fi
 
 source ${DIR}/${ENV}-env
 
-check_for_required_clis() {
-   CLIS=(pivnet kp docker kubectl ytt)
-   MISSING=false
-
-   for cli in "${CLIS[@]}"; do
-      INSTALLED=$(which $cli)
-      if [[ -z $INSTALLED ]]; then
-         echo "Missing CLI: $cli"
-         MISSING=true
-      fi
-   done
-
-   if [[ ${MISSING} == true ]]; then 
-      echo "Install the required CLI's."
-      exit 1
-   fi
-}
-
-validate_all_arguments() {
-   for var in "$@"
-   do
-      echo "$var"
-      if [[ -z ${var} ]]; then
-         echo "${var} Not set"
-         exit 1
-      fi
-   done
-
-   if [[ ! -d ${TANZU_CLI_DIR} ]]; then
-      echo "Tanzu CLI Directory: ${TANZU_CLI_DIR} does not exist."
-      if [[ ! -z "${TANZU_DOWNLOADS_DIR}" ]]; then
-         download_tanzu_application_platform
-      else
-         echo "TANZU_DOWNLOADS_DIR Not set"
-         exit 1
-      fi
-   fi
-
-   if [[ ! -d ${TANZU_ESSENTIALS_DIR} ]]; then
-      echo "Tanzu CLI Directory: ${TANZU_ESSENTIALS_DIR} does not exist."
-      if [[ ! -z "${TANZU_DOWNLOADS_DIR}" ]]; then
-         download_tanzu_essentials
-      else
-         echo "TANZU_DOWNLOADS_DIR Not set"
-         exit 1
-      fi      
-   fi
-}
-
-prompt_user_kubernetes_login() {
-   read -p "Have you logged into the kubernetes cluster (yes/no): " RESPONSE
-   if [[ (-z "${RESPONSE}") || ("${RESPONSE}" == "no" ) ]]; then
-      echo "Cannot proceed as you need to be logged into your k8s cluster"
-      exit 1
-   fi
-}
-
-tanzu_network_login() {
-   if [[ ! -z "${TANZU_NETWORK_TOKEN}" ]]; then
-      pivnet login --api-token ${TANZU_NETWORK_TOKEN}
-   else
-      echo "TANZU_NETWORK_TOKEN variable not set"
-   fi
-}
-
-tanzu_network_logout() {
-   pivnet logout
-}
-
-download_tanzu_essentials() {
-   OS=$(uname)
-
-   tanzu_network_login
-
-   if [[ ! -d ${TANZU_DOWNLOADS_DIR} ]]; then
-      echo "Tanzu CLI Directory: ${TANZU_DOWNLOADS_DIR} does not exist."
-      mkdir -p ${TANZU_DOWNLOADS_DIR}
-   fi
-
-   pushd ${TANZU_DOWNLOADS_DIR}
-      if [[ "${OS}" == "Linux" ]]; then
-         pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-linux-amd64-*.tgz'
-      elif [[ "${OS}" == "Darwin" ]]; then
-         pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version="${TANZU_ESSENTIALS_VERSION}" --glob='tanzu-cluster-essentials-darwin-amd64-*.tgz'
-      fi
-
-      mkdir -p ${TANZU_ESSENTIALS_DIR}
-      tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-* -C ${TANZU_ESSENTIALS_DIR}
-      rm ${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-*
-   popd
-
-   tanzu_network_logout
-}
-
-download_tanzu_application_platform() {
-   OS=$(uname)
-
-   tanzu_network_login
-
-   if [[ ! -d ${TANZU_DOWNLOADS_DIR} ]]; then
-      echo "Tanzu CLI Directory: ${TANZU_CLI_DIR} does not exist."
-      mkdir -p ${TANZU_DOWNLOADS_DIR}
-   fi
-
-   pushd ${TANZU_DOWNLOADS_DIR}
-      if [[ "${OS}" == "Linux" ]]; then
-         pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-cli-linux-amd64.*.gz'
-      elif [[ "${OS}" == "Darwin" ]]; then
-         pivnet download-product-files --product-slug='tanzu-application-platform' --release-version="${TAP_VERSION}" --glob='tanzu-cli-darwin-amd64.*.gz'
-      fi
-   
-      mkdir -p ${TANZU_CLI_DIR}
-      tar zxvf ${TANZU_DOWNLOADS_DIR}/tanzu-cli-* -C ${TANZU_CLI_DIR}
-      rm ${TANZU_DOWNLOADS_DIR}/tanzu-cli-*
-   popd
-
-   tanzu_network_logout
-}
-
-install_tanzu_plugins() {
-   pushd ${TANZU_CLI_DIR}
-      TANZU_CLI_PATH=$(find . -name tanzu-cli-*)
-      cp ${TANZU_CLI_PATH} /usr/local/bin/tanzu
-
-      export TANZU_CLI_NO_INIT=true
-      tanzu plugin install --group vmware-tap/default:v${TAP_VERSION}
-   popd
-}
-
-docker_login_to_tanzunet() {
-   docker login registry.tanzu.vmware.com -u ${TAP_TANZU_REGISTRY_USERNAME} -p ${TAP_TANZU_REGISTRY_PASSWORD}
-}
-
-configure_psp_for_tkgs(){
+configure_psp_for_tkgs() {
    set +e
    CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep ${CLUSTER_ROLE_BINDING_NAME})
    set -e
@@ -162,8 +31,6 @@ configure_psp_for_tkgs(){
 }
 
 setup_kapp_controller() {
-   echo "**** Executing setup_kapp_controller ****"
-
    KAPP_CONTROLLER_EXIST=$(kubectl get po -A | grep kapp-controller- | awk '{split($0,a," "); print a[1]}')
 
    if [[ ! -z "${KAPP_CONTROLLER_EXIST}" ]]; then
@@ -186,13 +53,9 @@ setup_kapp_controller() {
       create_kapp_controller_secret
       install_tkg_essentials
    fi
-
-   echo "**** Done executing setup_kapp_controller ****"
 }
 
 create_kapp_controller_namespace() {
-   echo "**** Executing create_kapp_controller_namespace ****"
-
    set +e
    NAMESPACE_EXISTS=$(kubectl get namespace | grep "kapp-controller")
    set -e
@@ -203,13 +66,9 @@ create_kapp_controller_namespace() {
    else
       echo "Skipping create of the namespace: kapp-controller, as it already exists"
    fi
-
-   echo "**** Done executing create_kapp_controller_namespace ****"
 }
 
 create_kapp_controller_secret() {
-   echo "**** Executing create_kapp_controller_secret ****"
-
    set +e
    SECRET_EXISTS=$(kubectl get secret --namespace kapp-controller | grep "kapp-controller-config")
    set -e
@@ -223,13 +82,9 @@ create_kapp_controller_secret() {
    else
       echo "Skipping create of the secret: kapp-controller-config, as it already exists"
    fi
-
-   echo "**** Done executing create_kapp_controller_secret ****"
 }
 
 install_tkg_essentials() {
-   echo "**** Executing install_tkg_essentials ****"
-
    pushd ${TANZU_ESSENTIALS_DIR}
       export INSTALL_BUNDLE=${TANZU_ESSENTIALS_BUNDLE}
       export INSTALL_REGISTRY_HOSTNAME=${TAP_TANZU_REGISTRY_HOST}
@@ -240,20 +95,7 @@ install_tkg_essentials() {
    popd
 }
 
-copy_images_to_registry() {
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
-   export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
-   export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
-   export TAP_VERSION=${TAP_VERSION}
-
-   imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-      --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY} \
-      --registry-ca-cert-path ${INTERNAL_REGISTRY_CA_CERT_PATH}
-}
-
 add_tap_repository() {
-   echo "**** Executing add_tap_repository ****"
-
    export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
    export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
    export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
@@ -288,19 +130,6 @@ add_tap_repository() {
    tanzu package repository get ${TAP_REPOSITORY_NAME} --namespace ${TAP_INSTALL_NAMESPACE}
 
    tanzu package available list --namespace ${TAP_INSTALL_NAMESPACE}
-}
-
-generate_tap_values() {
-   ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-tap-values.yaml";
-      cat ${BASE_DIR}/template/tap-values-template.yaml
-      echo "EOF";
-   ) >${BASE_DIR}/config/temp.yml
-   . ${BASE_DIR}/config/temp.yml
-
-   rm ${BASE_DIR}/config/temp.yml
-   
-   ytt -f ${BASE_DIR}/config/${ENV}-tap-values.yaml --data-values-env TAP \
-      --data-value-file harbor.certificate=${INTERNAL_REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-tap-values-final.yaml
 }
 
 install_tap() {
@@ -397,16 +226,23 @@ function setup_git_secrets() {
    fi
 }
 
-check_for_required_clis
-validate_all_arguments
-install_tanzu_plugins
-prompt_user_kubernetes_login
-docker_login_to_tanzunet
-configure_psp_for_tkgs
-setup_kapp_controller
-copy_images_to_registry
-add_tap_repository
-setup_git_secrets
-setup_dev_namespace
-generate_tap_values
-install_tap
+logAndExecute() {
+   echo "**** Executing ${1} ****"
+   $1
+   echo "**** Done Executing ${1} ****"
+   echo
+}
+
+# logAndExecute check_for_required_clis
+# logAndExecute validate_all_arguments
+# logAndExecute install_tanzu_plugins
+# logAndExecute prompt_user_kubernetes_login
+# logAndExecute docker_login_to_tanzunet
+# logAndExecute configure_psp_for_tkgs
+# logAndExecute setup_kapp_controller
+# logAndExecute copy_images_to_registry
+# logAndExecute add_tap_repository
+logAndExecute generate_tap_values
+logAndExecute install_tap
+logAndExecute setup_git_secrets
+logAndExecute setup_dev_namespace

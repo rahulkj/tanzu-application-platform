@@ -97,7 +97,3 @@ namespace_provisioner:
   - name: #@ data.values.REGISTRY_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
     create_export: true
-  overlay_secrets:
-  - name: #@ data.values.REGISTRY_SECRET_NAME + "-overlay"
-    namespace: #@ data.values.INSTALL_NAMESPACE
-    create_export: true
