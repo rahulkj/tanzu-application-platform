@@ -22,7 +22,7 @@ uninstall_tap() {
 
     tanzu package repository delete ${TAP_REPOSITORY_NAME} -n ${TAP_INSTALL_NAMESPACE} -y
 
-    tanzu secret registry delete tap-registry -n ${TAP_INSTALL_NAMESPACE} -y
+    tanzu secret registry delete ${TAP_REGISTRY_SECRET_NAME} -n ${TAP_INSTALL_NAMESPACE} -y
 
     kubectl delete ns ${TAP_INSTALL_NAMESPACE}
 }
