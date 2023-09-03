@@ -1,30 +1,31 @@
 #@ load("@ytt:data", "data")
 ---
-
-profile: #@ data.values.PROFILE
-
 shared:
   ingress_domain: #@ data.values.INGRESS_DOMAIN
   image_registry:
     project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
-    username: #@ data.values.INTERNAL_REGISTRY_USERNAME
-    password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
-  kubernetes_version: #@ data.values.KUBERNETES_VERSION
+    secret:
+      name: #@ data.values.REGISTRY_SECRET_NAME
+      namespace: #@ data.values.INSTALL_NAMESPACE
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+
+profile: #@ data.values.PROFILE
 
 ceip_policy_disclosed: TRUE
 
 buildservice:
   kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
-  kp_default_repository_username: #@ data.values.INTERNAL_REGISTRY_USERNAME
-  kp_default_repository_password: #@ data.values.INTERNAL_REGISTRY_PASSWORD
+  kp_default_repository_secret:
+    name: #@ data.values.REGISTRY_SECRET_NAME
+    namespace: #@ data.values.INSTALL_NAMESPACE
+  exclude_dependencies: true
+
+supply_chain: #@ data.values.SUPPLY_CHAIN
 
 cartographer:
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
-
-supply_chain: #@ data.values.SUPPLY_CHAIN
 
 #@ if data.values.SUPPLY_CHAIN == "basic":
 ootb_supply_chain_basic:
@@ -93,7 +94,3 @@ $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
 namespace_provisioner:
   controller: true
-  import_data_values_secrets:
-  - name: #@ data.values.REGISTRY_SECRET_NAME
-    namespace: #@ data.values.INSTALL_NAMESPACE
-    create_export: true

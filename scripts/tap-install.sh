@@ -112,7 +112,9 @@ add_tap_repository() {
       echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
    fi
 
-   tanzu secret registry add tap-registry \
+   kubectl label --overwrite ns ${TAP_INSTALL_NAMESPACE} pod-security.kubernetes.io/enforce=privileged
+
+   tanzu secret registry add ${TAP_REGISTRY_SECRET_NAME} \
    --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
    --server ${INSTALL_REGISTRY_HOSTNAME} \
    --export-to-all-namespaces --yes --namespace ${TAP_INSTALL_NAMESPACE}
@@ -151,12 +153,13 @@ setup_dev_namespace() {
       kubectl create ns ${TAP_DEV_NAMESPACE}
    fi
 
-   tanzu secret registry add tap-registry \
-   --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
+   tanzu secret registry add ${TAP_REGISTRY_SECRET_NAME} \
+   --username ${INSTALL_REGISTRY_USERNAME} \
+   --password ${INSTALL_REGISTRY_PASSWORD} \
    --server ${INSTALL_REGISTRY_HOSTNAME} \
    --export-to-all-namespaces --yes --namespace ${TAP_DEV_NAMESPACE}
 
-   tanzu secret registry add registry-credentials \
+   tanzu secret registry add ${TAP_DEV_REGISTRY_SECRET_NAME} \
    --server ${INSTALL_REGISTRY_HOSTNAME} \
    --username ${INSTALL_REGISTRY_USERNAME} \
    --password ${INSTALL_REGISTRY_PASSWORD} \
@@ -166,7 +169,7 @@ cat <<EOF | kubectl -n ${TAP_DEV_NAMESPACE} apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: tap-registry
+  name: ${TAP_REGISTRY_SECRET_NAME}
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
 type: kubernetes.io/dockerconfigjson
@@ -178,10 +181,10 @@ kind: ServiceAccount
 metadata:
   name: default
 secrets:
-  - name: registry-credentials
+  - name: ${TAP_DEV_REGISTRY_SECRET_NAME}
 imagePullSecrets:
-  - name: registry-credentials
-  - name: tap-registry
+  - name: ${TAP_DEV_REGISTRY_SECRET_NAME}
+  - name: ${TAP_REGISTRY_SECRET_NAME}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
