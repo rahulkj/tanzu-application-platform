@@ -112,7 +112,7 @@ add_tap_repository() {
       echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
    fi
 
-   kubectl label --overwrite ns ${TAP_INSTALL_NAMESPACE} pod-security.kubernetes.io/enforce=privileged
+   # kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged
 
    tanzu secret registry add ${TAP_REGISTRY_SECRET_NAME} \
    --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
