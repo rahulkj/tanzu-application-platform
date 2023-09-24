@@ -214,19 +214,18 @@ EOF
 }
 
 function setup_git_secrets() {
-   if [[ (! -z ${GIT_USERNAME}) && (! -z ${GIT_PASSWORD}) && (! -z ${GIT_URL} ) ]]; then
-      export GIT_PASSWORD=${GIT_PASSWORD}
+   ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-git-secrets.yaml";
+      cat ${BASE_DIR}/template/secrets-template.yaml
+      echo "EOF";
+   ) >${BASE_DIR}/config/temp.yml
+   . ${BASE_DIR}/config/temp.yml
 
-      set +e
-      SECRET_EXISTS=$(kubectl get secret --namespace "${TAP_DEV_NAMESPACE}" | grep "${TAP_GITOPS_SSH_SECRET_NAME}")
-      set -e
+   rm ${BASE_DIR}/config/temp.yml
+   
+   ytt -f ${BASE_DIR}/config/${ENV}-git-secrets.yaml --data-values-env GIT \
+      --data-value-file harbor.certificate=${INTERNAL_REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-git-secrets-final.yaml
 
-      if [[ -z "${SECRET_EXISTS}" ]]; then
-         kp secret create ${TAP_GITOPS_SSH_SECRET_NAME} --git-url ${GIT_URL} \
-            --git-user ${GIT_USERNAME} --service-account ${K8S_SERVICE_ACCOUNT} \
-            --namespace ${TAP_DEV_NAMESPACE}
-      fi
-   fi
+   kubectl apply -f ${BASE_DIR}/config/${ENV}-git-secrets-final.yaml --namespace ${TAP_INSTALL_NAMESPACE}
 }
 
 logAndExecute() {
@@ -244,8 +243,8 @@ logAndExecute docker_login_to_tanzunet
 logAndExecute configure_psp_for_tkgs
 logAndExecute setup_kapp_controller
 logAndExecute copy_images_to_registry
+logAndExecute setup_git_secrets
 logAndExecute add_tap_repository
 logAndExecute generate_tap_values
 logAndExecute install_tap
-logAndExecute setup_git_secrets
-logAndExecute setup_dev_namespace
+# logAndExecute setup_dev_namespace

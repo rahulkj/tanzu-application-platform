@@ -94,3 +94,7 @@ $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
 namespace_provisioner:
   controller: true
+  import_data_values_secrets:
+  - name: #@ data.values.GITOPS_SSH_SECRET_NAME
+    namespace: #@ data.values.INSTALL_NAMESPACE
+    create_export: true
