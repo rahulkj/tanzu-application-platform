@@ -10,12 +10,12 @@ if [[ -z ${ENV} ]]; then
    exit 1
 fi
 
-if [[ ! -f ${DIR}/${ENV}-env ]]; then
+if [[ ! -f "${DIR}/${ENV}-env" ]]; then
    echo "Ensure you have the file ${DIR}/${ENV}-env in this directory. Use the scripts/env template to build your version"
    exit 1
 fi
 
-source ${DIR}/${ENV}-env
+source "${DIR}/${ENV}-env"
 
 configure_psp_for_tkgs() {
    set +e
@@ -85,7 +85,7 @@ create_kapp_controller_secret() {
 }
 
 install_tkg_essentials() {
-   pushd ${TANZU_ESSENTIALS_DIR}
+   pushd "${TANZU_ESSENTIALS_DIR}"
       export INSTALL_BUNDLE="${TANZU_ESSENTIALS_BUNDLE}"
       export INSTALL_REGISTRY_HOSTNAME="${TAP_TANZU_REGISTRY_HOST}"
       export INSTALL_REGISTRY_USERNAME="${TAP_TANZU_REGISTRY_USERNAME}"
@@ -95,12 +95,7 @@ install_tkg_essentials() {
    popd
 }
 
-add_tap_repository() {
-   export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
-   export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
-   export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
-   export TAP_VERSION="${TAP_VERSION}"
-
+create_tap_installation_namespace() {
    set +e
    NAMESPACE_EXISTS=$(kubectl get namespace | grep "${TAP_INSTALL_NAMESPACE}")
    set -e
@@ -111,35 +106,29 @@ add_tap_repository() {
    else
       echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
    fi
+}
 
-   # kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged
+create_registry_secrets() {
+   export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
+   export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
+   export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
+   export TAP_VERSION="${TAP_VERSION}"
 
-   # tanzu secret registry add "${TAP_REGISTRY_SECRET_NAME}" \
-   # --username "${INSTALL_REGISTRY_USERNAME}" --password "${INSTALL_REGISTRY_PASSWORD}" \
-   # --server "${INSTALL_REGISTRY_HOSTNAME}" \
-   # --export-to-all-namespaces --yes --namespace "${TAP_INSTALL_NAMESPACE}"
+   tanzu secret registry add "${TAP_REGISTRY_SECRET_NAME}" \
+   --username "${INSTALL_REGISTRY_USERNAME}" --password "${INSTALL_REGISTRY_PASSWORD}" \
+   --server "${INSTALL_REGISTRY_HOSTNAME}" \
+   --export-to-all-namespaces --yes --namespace "${TAP_INSTALL_NAMESPACE}"
+}
 
-   set +e
-   SECRET_EXISTS=$(kubectl get secret --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_REGISTRY_SECRET_NAME}")
-   set -e
-   
-   if [[ -z "${SECRET_EXISTS}" ]]; then
-      kubectl create secret docker-registry "${TAP_REGISTRY_SECRET_NAME}" \
-      --docker-username="${INSTALL_REGISTRY_PASSWORD}" \
-      --docker-password="${INSTALL_REGISTRY_HOSTNAME}" \
-      --namespace "${TAP_INSTALL_NAMESPACE}"
-   else
-      echo "Skipping create of the secret: ${TAP_REGISTRY_SECRET_NAME}, as it already exists"
-   fi
-
+add_tap_repository() {
    if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
       tanzu package repository add "${TAP_REPOSITORY_NAME}" \
-      --url "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
+      --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
-      if [[ -z $(tanzu package repository list --namespace ${TAP_INSTALL_NAMESPACE} | grep  ${TAP_VERSION}) ]]; then
+      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_VERSION}") ]]; then
          tanzu package repository update "${TAP_REPOSITORY_NAME}" \
-         --url "${INSTALL_REGISTRY_HOSTNAME}/${INSTALL_REPO}:${TAP_VERSION}" \
+         --url "${TAP_INTERNAL_REGISTRY_HOST}/${INSTALL_REPO}:${TAP_VERSION}" \
          --namespace "${TAP_INSTALL_NAMESPACE}"
       else
          echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"
@@ -260,7 +249,9 @@ logAndExecute docker_login_to_tanzunet
 logAndExecute configure_psp_for_tkgs
 logAndExecute setup_kapp_controller
 logAndExecute copy_images_to_registry
+logAndExecute create_tap_installation_namespace
 logAndExecute setup_git_secrets
+logAndExecute create_registry_secrets
 logAndExecute add_tap_repository
 logAndExecute generate_tap_values
 logAndExecute install_tap
