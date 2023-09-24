@@ -19,12 +19,12 @@ source ${DIR}/${ENV}-env
 
 configure_psp_for_tkgs() {
    set +e
-   CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep ${CLUSTER_ROLE_BINDING_NAME})
+   CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep "${CLUSTER_ROLE_BINDING_NAME}")
    set -e
 
    if [[ -z "${CRB_EXISTS}" ]]; then
       echo "Creating the clusterrolebinding : ${CLUSTER_ROLE_BINDING_NAME}, as it does not exist"
-      kubectl create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --clusterrole=psp:vmware-system-privileged --group=system:authenticated
+      kubectl create clusterrolebinding "${CLUSTER_ROLE_BINDING_NAME}" --clusterrole=psp:vmware-system-privileged --group=system:authenticated
    else
       echo "Skipping creation of the clusterrolebinding : ${CLUSTER_ROLE_BINDING_NAME}, as it already exists"
    fi
@@ -42,8 +42,8 @@ setup_kapp_controller() {
          echo "Creating secret: kapp-controller-config, as it does not exist"
 
          kubectl create secret generic kapp-controller-config \
-            --namespace ${KAPP_CONTROLLER_EXIST} \
-            --from-file caCerts=${INTERNAL_REGISTRY_CA_CERT_PATH}
+            --namespace "${KAPP_CONTROLLER_EXIST}" \
+            --from-file caCerts="${INTERNAL_REGISTRY_CA_CERT_PATH}"
       else
          echo "Skipping create of the secret: kapp-controller-config, as it already exists"
       fi
@@ -78,7 +78,7 @@ create_kapp_controller_secret() {
 
       kubectl create secret generic kapp-controller-config \
          --namespace kapp-controller \
-         --from-file caCerts=${INTERNAL_REGISTRY_CA_CERT_PATH}
+         --from-file caCerts="${INTERNAL_REGISTRY_CA_CERT_PATH}"
    else
       echo "Skipping create of the secret: kapp-controller-config, as it already exists"
    fi
@@ -86,20 +86,20 @@ create_kapp_controller_secret() {
 
 install_tkg_essentials() {
    pushd ${TANZU_ESSENTIALS_DIR}
-      export INSTALL_BUNDLE=${TANZU_ESSENTIALS_BUNDLE}
-      export INSTALL_REGISTRY_HOSTNAME=${TAP_TANZU_REGISTRY_HOST}
-      export INSTALL_REGISTRY_USERNAME=${TAP_TANZU_REGISTRY_USERNAME}
-      export INSTALL_REGISTRY_PASSWORD=${TAP_TANZU_REGISTRY_PASSWORD}
+      export INSTALL_BUNDLE="${TANZU_ESSENTIALS_BUNDLE}"
+      export INSTALL_REGISTRY_HOSTNAME="${TAP_TANZU_REGISTRY_HOST}"
+      export INSTALL_REGISTRY_USERNAME="${TAP_TANZU_REGISTRY_USERNAME}"
+      export INSTALL_REGISTRY_PASSWORD="${TAP_TANZU_REGISTRY_PASSWORD}"
 
       ./install.sh --yes
    popd
 }
 
 add_tap_repository() {
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
-   export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
-   export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
-   export TAP_VERSION=${TAP_VERSION}
+   export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
+   export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
+   export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
+   export TAP_VERSION="${TAP_VERSION}"
 
    set +e
    NAMESPACE_EXISTS=$(kubectl get namespace | grep "${TAP_INSTALL_NAMESPACE}")
@@ -107,69 +107,86 @@ add_tap_repository() {
 
    if [[ -z "${NAMESPACE_EXISTS}" ]]; then
       echo "Creating namespace: ${TAP_INSTALL_NAMESPACE}, as it does not exist"
-      kubectl create namespace ${TAP_INSTALL_NAMESPACE}
+      kubectl create namespace "${TAP_INSTALL_NAMESPACE}"
    else
       echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
    fi
 
    # kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged
 
-   tanzu secret registry add ${TAP_REGISTRY_SECRET_NAME} \
-   --username ${INSTALL_REGISTRY_USERNAME} --password ${INSTALL_REGISTRY_PASSWORD} \
-   --server ${INSTALL_REGISTRY_HOSTNAME} \
-   --export-to-all-namespaces --yes --namespace ${TAP_INSTALL_NAMESPACE}
+   # tanzu secret registry add "${TAP_REGISTRY_SECRET_NAME}" \
+   # --username "${INSTALL_REGISTRY_USERNAME}" --password "${INSTALL_REGISTRY_PASSWORD}" \
+   # --server "${INSTALL_REGISTRY_HOSTNAME}" \
+   # --export-to-all-namespaces --yes --namespace "${TAP_INSTALL_NAMESPACE}"
 
-   if [[ -z $(tanzu package repository list --namespace ${TAP_INSTALL_NAMESPACE} | grep  ${TAP_REPOSITORY_NAME}) ]]; then
-      tanzu package repository add ${TAP_REPOSITORY_NAME} \
-         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
-         --namespace ${TAP_INSTALL_NAMESPACE}
+   set +e
+   SECRET_EXISTS=$(kubectl get secret --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_REGISTRY_SECRET_NAME}")
+   set -e
+   
+   if [[ -z "${SECRET_EXISTS}" ]]; then
+      kubectl create secret docker-registry "${TAP_REGISTRY_SECRET_NAME}" \
+      --docker-username="${INSTALL_REGISTRY_PASSWORD}" \
+      --docker-password="${INSTALL_REGISTRY_HOSTNAME}" \
+      --namespace "${TAP_INSTALL_NAMESPACE}"
    else
-      tanzu package repository update ${TAP_REPOSITORY_NAME} \
-         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION} \
-         --namespace ${TAP_INSTALL_NAMESPACE}
+      echo "Skipping create of the secret: ${TAP_REGISTRY_SECRET_NAME}, as it already exists"
    fi
 
-   tanzu package repository get ${TAP_REPOSITORY_NAME} --namespace ${TAP_INSTALL_NAMESPACE}
+   if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
+      tanzu package repository add "${TAP_REPOSITORY_NAME}" \
+      --url "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
+      --namespace "${TAP_INSTALL_NAMESPACE}"
+   else
+      if [[ -z $(tanzu package repository list --namespace ${TAP_INSTALL_NAMESPACE} | grep  ${TAP_VERSION}) ]]; then
+         tanzu package repository update "${TAP_REPOSITORY_NAME}" \
+         --url "${INSTALL_REGISTRY_HOSTNAME}/${INSTALL_REPO}:${TAP_VERSION}" \
+         --namespace "${TAP_INSTALL_NAMESPACE}"
+      else
+         echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"
+      fi
+   fi
 
-   tanzu package available list --namespace ${TAP_INSTALL_NAMESPACE}
+   tanzu package repository get "${TAP_REPOSITORY_NAME}" --namespace "${TAP_INSTALL_NAMESPACE}"
+
+   tanzu package available list --namespace "${TAP_INSTALL_NAMESPACE}"
 }
 
 install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
-      -v ${TAP_VERSION} --values-file ${BASE_DIR}/config/${ENV}-tap-values-final.yaml \
-      -n ${TAP_INSTALL_NAMESPACE}
+      -v "${TAP_VERSION}" --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml" \
+      -n "${TAP_INSTALL_NAMESPACE}"
 }
 
 setup_dev_namespace() {
-   export INSTALL_REGISTRY_HOSTNAME=${TAP_INTERNAL_REGISTRY_HOST}
-   export INSTALL_REGISTRY_USERNAME=${TAP_INTERNAL_REGISTRY_USERNAME}
-   export INSTALL_REGISTRY_PASSWORD=${TAP_INTERNAL_REGISTRY_PASSWORD}
+   export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
+   export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
+   export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
 
    set +e
    NAMESPACE_EXISTS=$(kubectl get namespace | grep "${TAP_DEV_NAMESPACE}")
    set -e
 
    if [[ -z "${NAMESPACE_EXISTS}" ]]; then
-      kubectl create ns ${TAP_DEV_NAMESPACE}
+      kubectl create ns "${TAP_DEV_NAMESPACE}"
    fi
 
-   tanzu secret registry add ${TAP_REGISTRY_SECRET_NAME} \
-   --username ${INSTALL_REGISTRY_USERNAME} \
-   --password ${INSTALL_REGISTRY_PASSWORD} \
-   --server ${INSTALL_REGISTRY_HOSTNAME} \
-   --export-to-all-namespaces --yes --namespace ${TAP_DEV_NAMESPACE}
+   tanzu secret registry add "${TAP_REGISTRY_SECRET_NAME}" \
+   --username "${INSTALL_REGISTRY_USERNAME}" \
+   --password "${INSTALL_REGISTRY_PASSWORD}" \
+   --server "${INSTALL_REGISTRY_HOSTNAME}" \
+   --export-to-all-namespaces --yes --namespace "${TAP_DEV_NAMESPACE}"
 
-   tanzu secret registry add ${TAP_DEV_REGISTRY_SECRET_NAME} \
-   --server ${INSTALL_REGISTRY_HOSTNAME} \
-   --username ${INSTALL_REGISTRY_USERNAME} \
-   --password ${INSTALL_REGISTRY_PASSWORD} \
-   --namespace ${TAP_DEV_NAMESPACE}
+   tanzu secret registry add "${TAP_DEV_REGISTRY_SECRET_NAME}" \
+   --server "${INSTALL_REGISTRY_HOSTNAME}" \
+   --username "${INSTALL_REGISTRY_USERNAME}" \
+   --password "${INSTALL_REGISTRY_PASSWORD}" \
+   --namespace "${TAP_DEV_NAMESPACE}"
 
-cat <<EOF | kubectl -n ${TAP_DEV_NAMESPACE} apply -f -
+cat <<EOF | kubectl -n "${TAP_DEV_NAMESPACE}" apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ${TAP_REGISTRY_SECRET_NAME}
+  name: "${TAP_REGISTRY_SECRET_NAME}"
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
 type: kubernetes.io/dockerconfigjson
@@ -181,10 +198,10 @@ kind: ServiceAccount
 metadata:
   name: default
 secrets:
-  - name: ${TAP_DEV_REGISTRY_SECRET_NAME}
+  - name: "${TAP_DEV_REGISTRY_SECRET_NAME}"
 imagePullSecrets:
-  - name: ${TAP_DEV_REGISTRY_SECRET_NAME}
-  - name: ${TAP_REGISTRY_SECRET_NAME}
+  - name: "${TAP_DEV_REGISTRY_SECRET_NAME}"
+  - name: "${TAP_REGISTRY_SECRET_NAME}"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -217,15 +234,15 @@ function setup_git_secrets() {
    ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-git-secrets.yaml";
       cat ${BASE_DIR}/template/secrets-template.yaml
       echo "EOF";
-   ) >${BASE_DIR}/config/temp.yml
-   . ${BASE_DIR}/config/temp.yml
+   ) >"${BASE_DIR}/config/temp.yml"
+   . "${BASE_DIR}/config/temp.yml"
 
-   rm ${BASE_DIR}/config/temp.yml
+   rm "${BASE_DIR}/config/temp.yml"
    
-   ytt -f ${BASE_DIR}/config/${ENV}-git-secrets.yaml --data-values-env GIT \
-      --data-value-file harbor.certificate=${INTERNAL_REGISTRY_CA_CERT_PATH} > ${BASE_DIR}/config/${ENV}-git-secrets-final.yaml
+   ytt -f "${BASE_DIR}/config/${ENV}-git-secrets.yaml" --data-values-env GIT \
+      --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
 
-   kubectl apply -f ${BASE_DIR}/config/${ENV}-git-secrets-final.yaml --namespace ${TAP_INSTALL_NAMESPACE}
+   kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${TAP_INSTALL_NAMESPACE}"
 }
 
 logAndExecute() {

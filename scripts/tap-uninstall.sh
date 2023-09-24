@@ -18,21 +18,21 @@ fi
 source ${DIR}/${ENV}-env
 
 uninstall_tap() {
-    tanzu package installed delete tap -n ${TAP_INSTALL_NAMESPACE} -y
+    tanzu package installed delete tap -n "${TAP_INSTALL_NAMESPACE}" -y
 
-    tanzu package repository delete ${TAP_REPOSITORY_NAME} -n ${TAP_INSTALL_NAMESPACE} -y
+    tanzu package repository delete "${TAP_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
 
-    tanzu secret registry delete ${TAP_REGISTRY_SECRET_NAME} -n ${TAP_INSTALL_NAMESPACE} -y
+    tanzu secret registry delete "${TAP_REGISTRY_SECRET_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
 
-    kubectl delete ns ${TAP_INSTALL_NAMESPACE}
+    kubectl delete ns "${TAP_INSTALL_NAMESPACE}"
 }
 
 uninstall_tkg_essentials() {
     pushd ${TANZU_ESSENTIALS_DIR}
-        export INSTALL_BUNDLE=${TANZU_ESSENTIALS_BUNDLE}
-        export INSTALL_REGISTRY_HOSTNAME=${TAP_TANZU_REGISTRY_HOST}
-        export INSTALL_REGISTRY_USERNAME=${TAP_TANZU_REGISTRY_USERNAME}
-        export INSTALL_REGISTRY_PASSWORD=${TAP_TANZU_REGISTRY_PASSWORD}
+        export INSTALL_BUNDLE="${TANZU_ESSENTIALS_BUNDLE}"
+        export INSTALL_REGISTRY_HOSTNAME="${TAP_TANZU_REGISTRY_HOST}"
+        export INSTALL_REGISTRY_USERNAME="${TAP_TANZU_REGISTRY_USERNAME}"
+        export INSTALL_REGISTRY_PASSWORD="${TAP_TANZU_REGISTRY_PASSWORD}"
 
         ./uninstall.sh --yes
     popd
@@ -42,7 +42,7 @@ uninstall_tkg_essentials() {
 
 delete_psp_for_tkgs() {
     set +e
-    CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep ${CLUSTER_ROLE_BINDING_NAME})
+    CRB_EXISTS=$(kubectl get clusterrolebindings.rbac.authorization.k8s.io | grep "${CLUSTER_ROLE_BINDING_NAME}")
     set -e
 
     if [[ ! -z "${CRB_EXISTS}" ]]; then
