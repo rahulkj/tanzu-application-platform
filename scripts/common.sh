@@ -79,8 +79,12 @@ download_tanzu_essentials() {
 
    if [[ ! -d "${TANZU_DOWNLOADS_DIR}" ]]; then
       echo "Tanzu CLI Directory: ${TANZU_DOWNLOADS_DIR} does not exist."
-      mkdir -p "${TANZU_DOWNLOADS_DIR}"
+   else
+      echo "Tanzu CLI Directory: ${TANZU_DOWNLOADS_DIR} exists, hence deleting it"
+      rm -rf "${TANZU_DOWNLOADS_DIR}"
    fi
+
+   mkdir -p "${TANZU_DOWNLOADS_DIR}"
 
    pushd "${TANZU_DOWNLOADS_DIR}"
       if [[ "${OS}" == "Linux" ]]; then
@@ -96,8 +100,9 @@ download_tanzu_essentials() {
       fi
 
       mkdir -p "${TANZU_ESSENTIALS_DIR}"
-      tar zxvf "${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-*" -C "${TANZU_ESSENTIALS_DIR}"
-      rm "${TANZU_DOWNLOADS_DIR}/tanzu-cluster-essentials-*"
+      TAR_FILE=$(find . -name 'tanzu-cluster-essentials-*.tgz')
+      tar zxvf "${TAR_FILE}" -C "${TANZU_ESSENTIALS_DIR}"
+      rm "${TAR_FILE}"
    popd
 
    tanzu_network_logout
@@ -110,8 +115,12 @@ download_tanzu_application_platform() {
 
    if [[ ! -d "${TANZU_DOWNLOADS_DIR}" ]]; then
       echo "Tanzu CLI Directory: ${TANZU_CLI_DIR} does not exist."
-      mkdir -p "${TANZU_DOWNLOADS_DIR}"
+   else
+      echo "Tanzu CLI Directory: ${TANZU_CLI_DIR} exists ,so deleting it"
+      rm -rf "${TANZU_DOWNLOADS_DIR}"
    fi
+   
+   mkdir -p "${TANZU_DOWNLOADS_DIR}"
 
    pushd "${TANZU_DOWNLOADS_DIR}"
       if [[ "${OS}" == "Linux" ]]; then
@@ -127,8 +136,9 @@ download_tanzu_application_platform() {
       fi
    
       mkdir -p "${TANZU_CLI_DIR}"
-      tar zxvf "${TANZU_DOWNLOADS_DIR}/tanzu-cli-*" -C "${TANZU_CLI_DIR}"
-      rm "${TANZU_DOWNLOADS_DIR}/tanzu-cli-*"
+      TAR_FILE=$(find . -name '/tanzu-cli-*.tar.gz')
+      tar zxvf "${TAR_FILE}" -C "${TANZU_CLI_DIR}"
+      rm "${TAR_FILE}"
    popd
 
    tanzu_network_logout
