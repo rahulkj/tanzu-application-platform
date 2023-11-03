@@ -255,4 +255,9 @@ logAndExecute create_registry_secrets
 logAndExecute add_tap_repository
 logAndExecute generate_tap_values
 logAndExecute install_tap
-# logAndExecute setup_dev_namespace
+
+if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
+   echo "No dev space to create and update"
+else
+   logAndExecute setup_dev_namespace
+fi
