@@ -7,6 +7,7 @@ shared:
     secret:
       name: #@ data.values.REGISTRY_SECRET_NAME
       namespace: #@ data.values.INSTALL_NAMESPACE
+  kubernetes_version: #@ data.values.KUBERNETES_VERSION
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
@@ -16,7 +17,6 @@ profile: #@ data.values.PROFILE
 
 supply_chain: #@ data.values.SUPPLY_CHAIN
 
-kubernetes_version: #@ data.values.KUBERNETES_VERSION
 
 #@ if data.values.SUPPLY_CHAIN == "basic":
 ootb_supply_chain_basic:
