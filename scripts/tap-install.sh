@@ -128,7 +128,7 @@ add_tap_repository() {
    else
       if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_VERSION}") ]]; then
          tanzu package repository update "${TAP_REPOSITORY_NAME}" \
-         --url "${TAP_INTERNAL_REGISTRY_HOST}/${INSTALL_REPO}:${TAP_VERSION}" \
+         --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
          --namespace "${TAP_INSTALL_NAMESPACE}"
       else
          echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"

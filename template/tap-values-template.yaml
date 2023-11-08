@@ -10,22 +10,13 @@ shared:
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
-profile: #@ data.values.PROFILE
-
 ceip_policy_disclosed: TRUE
 
-buildservice:
-  kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
-  kp_default_repository_secret:
-    name: #@ data.values.REGISTRY_SECRET_NAME
-    namespace: #@ data.values.INSTALL_NAMESPACE
-  exclude_dependencies: true
+profile: #@ data.values.PROFILE
 
 supply_chain: #@ data.values.SUPPLY_CHAIN
 
-cartographer:
-  ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+kubernetes_version: #@ data.values.KUBERNETES_VERSION
 
 #@ if data.values.SUPPLY_CHAIN == "basic":
 ootb_supply_chain_basic:
@@ -50,6 +41,18 @@ ootb_supply_chain_testing_scanning:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 #@ end
 
+contour:
+  envoy:
+    service:
+      type: LoadBalancer
+
+buildservice:
+  kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
+  kp_default_repository_secret:
+    name: #@ data.values.REGISTRY_SECRET_NAME
+    namespace: #@ data.values.INSTALL_NAMESPACE
+  exclude_dependencies: true
+
 tap_gui:
   metadataStoreAutoconfiguration: true
   app_config:
@@ -63,15 +66,6 @@ tap_gui:
 metadata_store:
   ns_for_export_app_cert: "*"
   app_service_type: ClusterIP
-
-scanning:
-  metadataStore:
-    url: ""
-
-contour:
-  envoy:
-    service:
-      type: LoadBalancer
 
 accelerator:
   ingress:
@@ -88,13 +82,17 @@ appliveview_connector:
     ingressEnabled: true
     sslDeactivated: false
 
-source_controller:
-  ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
-
 namespace_provisioner:
   controller: true
   import_data_values_secrets:
   - name: #@ data.values.GITOPS_SSH_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
     create_export: true
+
+cartographer:
+  ca_cert_data: |
+$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+
+source_controller:
+  ca_cert_data: |
+$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
