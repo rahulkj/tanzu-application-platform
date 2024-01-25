@@ -51,7 +51,6 @@ buildservice:
   kp_default_repository_secret:
     name: #@ data.values.REGISTRY_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
-  exclude_dependencies: true
 
 tap_gui:
   metadataStoreAutoconfiguration: true
