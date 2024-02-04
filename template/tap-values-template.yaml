@@ -51,6 +51,9 @@ buildservice:
   kp_default_repository_secret:
     name: #@ data.values.REGISTRY_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
+  #@ if data.values.PROFILE == "full":
+  exclude_dependencies: true
+  #@ end
 
 tap_gui:
   metadataStoreAutoconfiguration: true
@@ -61,7 +64,17 @@ tap_gui:
       locations:
         - type: url
           target: #@ data.values.CATALOG_URL
-
+    techdocs:
+      builder: 'external'
+      publisher:
+        type: 'awsS3'
+        awsS3:
+          bucketName: techdocs
+          credentials:
+            accessKeyId: JWQ3rWfMBSbBMtDvomKP
+            secretAccessKey: pJvhrfAsIOUxEclbzhC0joD7bDnFgtcH
+          s3ForcePathStyle: true
+          endpoint: http://minio.lab.int:9000
 metadata_store:
   ns_for_export_app_cert: "*"
   app_service_type: ClusterIP

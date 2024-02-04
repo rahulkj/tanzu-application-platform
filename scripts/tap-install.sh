@@ -126,12 +126,26 @@ add_tap_repository() {
       --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
-      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_VERSION}") ]]; then
+      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
          tanzu package repository update "${TAP_REPOSITORY_NAME}" \
          --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
          --namespace "${TAP_INSTALL_NAMESPACE}"
       else
          echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"
+      fi
+   fi
+
+   if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
+      tanzu package repository add "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
+      --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+      --namespace "${TAP_INSTALL_NAMESPACE}"
+   else
+      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
+         tanzu package repository update "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
+         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+         --namespace "${TAP_INSTALL_NAMESPACE}"
+      else
+         echo "Nothing to update here for ${TAP_FULL_DEPS_REPOSITORY_NAME}"
       fi
    fi
 
@@ -144,6 +158,14 @@ install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
       -v "${TAP_VERSION}" --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml" \
       -n "${TAP_INSTALL_NAMESPACE}"
+   
+   if [[ "${TAP_PROFILE}" == "full" ]]; then
+      FULL_DEPS_VERSION=$(tanzu package available list full-deps.buildservice.tanzu.vmware.com \
+         --namespace tap-install -o json | jq -r '.[] | select(.name | test("full-deps")?) | .version')
+
+      tanzu package install full-deps -p full-deps.buildservice.tanzu.vmware.com \
+         -v "${FULL_DEPS_VERSION}" -n tap-install --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
+   fi
 }
 
 setup_dev_namespace() {
@@ -232,6 +254,7 @@ function setup_git_secrets() {
       --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
 
    kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${TAP_INSTALL_NAMESPACE}"
+
 }
 
 logAndExecute() {

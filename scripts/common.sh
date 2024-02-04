@@ -174,6 +174,11 @@ copy_images_to_registry() {
    imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
       --to-repo "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}" \
       --registry-ca-cert-path "${INTERNAL_REGISTRY_CA_CERT_PATH}"
+
+   if [[ "${TAP_PROFILE}" == "full" ]]; then
+      imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+         --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}
+   fi
 }
 
 generate_tap_values() {
