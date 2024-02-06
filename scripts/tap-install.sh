@@ -253,7 +253,7 @@ function setup_git_secrets() {
    ytt -f "${BASE_DIR}/config/${ENV}-git-secrets.yaml" --data-values-env GIT \
       --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
 
-   kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${TAP_INSTALL_NAMESPACE}"
+   kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${1}"
 
 }
 
@@ -273,7 +273,7 @@ logAndExecute configure_psp_for_tkgs
 logAndExecute setup_kapp_controller
 logAndExecute copy_images_to_registry
 logAndExecute create_tap_installation_namespace
-logAndExecute setup_git_secrets
+logAndExecute setup_git_secrets ${TAP_INSTALL_NAMESPACE}
 logAndExecute create_registry_secrets
 logAndExecute add_tap_repository
 logAndExecute generate_tap_values
@@ -283,4 +283,5 @@ if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
    echo "No dev space to create and update"
 else
    logAndExecute setup_dev_namespace
+   logAndExecute setup_git_secrets ${TAP_DEV_NAMESPACE}
 fi
