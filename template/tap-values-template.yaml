@@ -23,23 +23,6 @@ ootb_supply_chain_basic:
     repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
   gitops:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
-#@ if data.values.TESTING_SUPPLY_CHAIN == "testing":
-ootb_supply_chain_testing:
-  registry:
-    server: #@ data.values.INTERNAL_REGISTRY_HOST
-    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
-  gitops:
-    ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
-#@ elif data.values.TESTING_SUPPLY_CHAIN == "testing_scanning":
-ootb_supply_chain_testing_scanning:
-  registry:
-    server: #@ data.values.INTERNAL_REGISTRY_HOST
-    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
-  gitops:
-    ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
-  cluster_builder: default
-  service_account: default
-#@ end
 
 contour:
   envoy:
@@ -78,8 +61,6 @@ tap_gui:
 
 metadata_store:
   ns_for_export_app_cert: "*"
-  app_service_type: ClusterIP
-  ingress_enabled: true
 
 accelerator:
   ingress:
@@ -111,10 +92,3 @@ source_controller:
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
-grype:
-  namespace: #@ data.values.DEV_NAMESPACE
-  targetImagePullSecret: #@ data.values.REGISTRY_SECRET_NAME
-
-scanning:
-  metadataStore:
-    url: ""

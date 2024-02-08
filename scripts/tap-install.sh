@@ -160,11 +160,33 @@ install_tap() {
       -n "${TAP_INSTALL_NAMESPACE}"
    
    if [[ "${TAP_PROFILE}" == "full" ]]; then
-      FULL_DEPS_VERSION=$(tanzu package available list full-deps.buildservice.tanzu.vmware.com \
+      PACKAGE_VERSION=$(tanzu package available list full-deps.buildservice.tanzu.vmware.com \
          --namespace tap-install -o json | jq -r '.[] | select(.name | test("full-deps")?) | .version')
 
       tanzu package install full-deps -p full-deps.buildservice.tanzu.vmware.com \
-         -v "${FULL_DEPS_VERSION}" -n tap-install --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
+         -v "${PACKAGE_VERSION}" -n tap-install --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
+
+      if [[ ! -z "${TAP_TESTING_SUPPLY_CHAIN}" ]]; then
+         if [[ "${TAP_TESTING_SUPPLY_CHAIN}" == "testing_scanning" ]]; then
+            PACKAGE_VERSION=$(tanzu package available list ootb-supply-chain-testing-scanning.tanzu.vmware.com \
+               --namespace tap-install -o json | jq -r '.[] | select(.name | test("ootb-supply-chain-testing-scanning")?) | .version')
+
+            tanzu package install ootb-supply-chain-testing-scanning \
+               --package ootb-supply-chain-testing-scanning.tanzu.vmware.com \
+               --version "${PACKAGE_VERSION}" \
+               --values-file "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml" \
+               --namespace "${TAP_INSTALL_NAMESPACE}"
+         elif [[ "${TAP_TESTING_SUPPLY_CHAIN}" == "testing" ]]; then
+            PACKAGE_VERSION=$(tanzu package available list ootb-supply-chain-testing.tanzu.vmware.com \
+               --namespace tap-install -o json | jq -r '.[] | select(.name | test("ootb-supply-chain-testing")?) | .version')
+
+            tanzu package install ootb-supply-chain-testing \
+               --package ootb-supply-chain-testing.tanzu.vmware.com \
+               --version "${PACKAGE_VERSION}" \
+               --values-file "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml" \
+               --namespace "${TAP_INSTALL_NAMESPACE}"
+         fi
+      fi
    fi
 }
 
@@ -257,6 +279,11 @@ function setup_git_secrets() {
 
 }
 
+function setup_tekton_pipelines() {
+   kubectl apply -f "${BASE_DIR}/template/scanpolicy-grype.yaml" --namespace "${TAP_DEV_NAMESPACE}"
+   kubectl apply -f "${BASE_DIR}/template/tekton-pipeline-java.yaml" --namespace "${TAP_DEV_NAMESPACE}"
+}
+
 logAndExecute() {
    echo "**** Executing ${1} ****"
    $1
@@ -274,15 +301,16 @@ logAndExecute() {
 # logAndExecute setup_kapp_controller
 # logAndExecute copy_images_to_registry
 # logAndExecute create_tap_installation_namespace
-# logAndExecute setup_git_secrets ${TAP_INSTALL_NAMESPACE}
+# logAndExecute setup_git_secrets "${TAP_INSTALL_NAMESPACE}"
 # logAndExecute create_registry_secrets
 # logAndExecute add_tap_repository
-logAndExecute generate_tap_values
-logAndExecute install_tap
+# logAndExecute generate_tap_values
+# logAndExecute install_tap
 
 if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
    echo "No dev space to create and update"
 else
-   logAndExecute setup_dev_namespace
-   logAndExecute setup_git_secrets ${TAP_DEV_NAMESPACE}
+   # logAndExecute setup_dev_namespace
+   # logAndExecute setup_git_secrets "${TAP_DEV_NAMESPACE}"
+   logAndExecute setup_tekton_pipelines
 fi

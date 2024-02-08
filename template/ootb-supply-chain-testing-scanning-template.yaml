@@ -1,0 +1,18 @@
+#@ load("@ytt:data", "data")
+---
+
+#@ if data.values.TESTING_SUPPLY_CHAIN == "testing":
+registry:
+  server: #@ data.values.INTERNAL_REGISTRY_HOST
+  repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+gitops:
+  ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
+#@ elif data.values.TESTING_SUPPLY_CHAIN == "testing_scanning":
+registry:
+  server: #@ data.values.INTERNAL_REGISTRY_HOST
+  repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+gitops:
+  ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
+cluster_builder: default
+service_account: default
+#@ end

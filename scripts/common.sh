@@ -196,6 +196,9 @@ generate_tap_values() {
    
    ytt -f "${BASE_DIR}/config/${ENV}-tap-values.yaml" --data-values-env TAP \
       --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
+
+   ytt -f "${BASE_DIR}/template/ootb-supply-chain-testing-scanning-template.yaml" \
+      --data-values-env TAP > "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml"
 }
 
 logAndExecute() {
