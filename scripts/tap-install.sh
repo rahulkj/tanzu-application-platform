@@ -264,18 +264,19 @@ logAndExecute() {
    echo
 }
 
-logAndExecute check_for_required_clis
-logAndExecute validate_all_arguments
-logAndExecute install_tanzu_plugins
-logAndExecute prompt_user_kubernetes_login
-logAndExecute docker_login_to_tanzunet
-logAndExecute configure_psp_for_tkgs
-logAndExecute setup_kapp_controller
-logAndExecute copy_images_to_registry
-logAndExecute create_tap_installation_namespace
-logAndExecute setup_git_secrets ${TAP_INSTALL_NAMESPACE}
-logAndExecute create_registry_secrets
-logAndExecute add_tap_repository
+# logAndExecute check_for_required_clis
+# logAndExecute validate_all_arguments
+# logAndExecute install_tanzu_plugins
+# logAndExecute prompt_user_kubernetes_login
+# logAndExecute docker_login_to_tanzunet
+# logAndExecute docker_login_to_internal_registry
+# logAndExecute configure_psp_for_tkgs
+# logAndExecute setup_kapp_controller
+# logAndExecute copy_images_to_registry
+# logAndExecute create_tap_installation_namespace
+# logAndExecute setup_git_secrets ${TAP_INSTALL_NAMESPACE}
+# logAndExecute create_registry_secrets
+# logAndExecute add_tap_repository
 logAndExecute generate_tap_values
 logAndExecute install_tap
 

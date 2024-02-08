@@ -165,6 +165,10 @@ docker_login_to_tanzunet() {
    docker login registry.tanzu.vmware.com -u "${TAP_TANZU_REGISTRY_USERNAME}" -p "${TAP_TANZU_REGISTRY_PASSWORD}"
 }
 
+docker_login_to_internal_registry() {
+   docker login "${TAP_INTERNAL_REGISTRY_HOST}" -u "${TAP_INTERNAL_REGISTRY_USERNAME}" -p "${TAP_INTERNAL_REGISTRY_PASSWORD}"
+}
+
 copy_images_to_registry() {
    export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
    export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
