@@ -264,6 +264,10 @@ EOF
 }
 
 function setup_git_secrets() {
+   NAMESPACE=$2
+
+   echo "namespace is: $NAMESPACE"
+
    ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-git-secrets.yaml";
       cat ${BASE_DIR}/template/secrets-template.yaml
       echo "EOF";
@@ -275,7 +279,7 @@ function setup_git_secrets() {
    ytt -f "${BASE_DIR}/config/${ENV}-git-secrets.yaml" --data-values-env GIT \
       --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
 
-   kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${1}"
+   kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${NAMESPACE}"
 
 }
 
@@ -286,31 +290,31 @@ function setup_tekton_pipelines() {
 
 logAndExecute() {
    echo "**** Executing ${1} ****"
-   $1
+   $1 $@
    echo "**** Done Executing ${1} ****"
    echo
 }
 
-# logAndExecute check_for_required_clis
-# logAndExecute validate_all_arguments
-# logAndExecute install_tanzu_plugins
-# logAndExecute prompt_user_kubernetes_login
-# logAndExecute docker_login_to_tanzunet
-# logAndExecute docker_login_to_internal_registry
-# logAndExecute configure_psp_for_tkgs
-# logAndExecute setup_kapp_controller
-# logAndExecute copy_images_to_registry
-# logAndExecute create_tap_installation_namespace
-# logAndExecute setup_git_secrets "${TAP_INSTALL_NAMESPACE}"
-# logAndExecute create_registry_secrets
-# logAndExecute add_tap_repository
-# logAndExecute generate_tap_values
-# logAndExecute install_tap
+logAndExecute check_for_required_clis
+logAndExecute validate_all_arguments
+logAndExecute install_tanzu_plugins
+logAndExecute prompt_user_kubernetes_login
+logAndExecute docker_login_to_tanzunet
+logAndExecute docker_login_to_internal_registry
+logAndExecute configure_psp_for_tkgs
+logAndExecute setup_kapp_controller
+logAndExecute copy_images_to_registry
+logAndExecute create_tap_installation_namespace
+logAndExecute setup_git_secrets "${TAP_INSTALL_NAMESPACE}"
+logAndExecute create_registry_secrets
+logAndExecute add_tap_repository
+logAndExecute generate_tap_values
+logAndExecute install_tap
 
 if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
    echo "No dev space to create and update"
 else
-   # logAndExecute setup_dev_namespace
-   # logAndExecute setup_git_secrets "${TAP_DEV_NAMESPACE}"
+   logAndExecute setup_dev_namespace
+   logAndExecute setup_git_secrets "${TAP_DEV_NAMESPACE}"
    logAndExecute setup_tekton_pipelines
 fi
