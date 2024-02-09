@@ -43,7 +43,7 @@ setup_kapp_controller() {
 
          kubectl create secret generic kapp-controller-config \
             --namespace "${KAPP_CONTROLLER_EXIST}" \
-            --from-file caCerts="${INTERNAL_REGISTRY_CA_CERT_PATH}"
+            --from-file caCerts="${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}"
       else
          echo "Skipping create of the secret: kapp-controller-config, as it already exists"
       fi
@@ -78,7 +78,7 @@ create_kapp_controller_secret() {
 
       kubectl create secret generic kapp-controller-config \
          --namespace kapp-controller \
-         --from-file caCerts="${INTERNAL_REGISTRY_CA_CERT_PATH}"
+         --from-file caCerts="${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}"
    else
       echo "Skipping create of the secret: kapp-controller-config, as it already exists"
    fi
@@ -86,10 +86,10 @@ create_kapp_controller_secret() {
 
 install_tkg_essentials() {
    pushd "${TANZU_ESSENTIALS_DIR}"
-      export INSTALL_BUNDLE="${TANZU_ESSENTIALS_BUNDLE}"
-      export INSTALL_REGISTRY_HOSTNAME="${TAP_TANZU_REGISTRY_HOST}"
-      export INSTALL_REGISTRY_USERNAME="${TAP_TANZU_REGISTRY_USERNAME}"
-      export INSTALL_REGISTRY_PASSWORD="${TAP_TANZU_REGISTRY_PASSWORD}"
+      export INSTALL_BUNDLE="${TANZU_NETWORK_ESSENTIALS_BUNDLE}"
+      export INSTALL_REGISTRY_HOSTNAME="${TAP_TANZU_NETWORK_REGISTRY_HOST}"
+      export INSTALL_REGISTRY_USERNAME="${TAP_TANZU_NETWORK_REGISTRY_USERNAME}"
+      export INSTALL_REGISTRY_PASSWORD="${TAP_TANZU_NETWORK_REGISTRY_PASSWORD}"
 
       ./install.sh --yes
    popd
@@ -123,12 +123,12 @@ create_registry_secrets() {
 add_tap_repository() {
    if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
       tanzu package repository add "${TAP_REPOSITORY_NAME}" \
-      --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
+      --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
       if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
          tanzu package repository update "${TAP_REPOSITORY_NAME}" \
-         --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
+         --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
          --namespace "${TAP_INSTALL_NAMESPACE}"
       else
          echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"
@@ -137,12 +137,12 @@ add_tap_repository() {
 
    if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
       tanzu package repository add "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
-      --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+      --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}:${TAP_VERSION} \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
       if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
          tanzu package repository update "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
-         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+         --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}:${TAP_VERSION} \
          --namespace "${TAP_INSTALL_NAMESPACE}"
       else
          echo "Nothing to update here for ${TAP_FULL_DEPS_REPOSITORY_NAME}"
@@ -277,7 +277,7 @@ function setup_git_secrets() {
    rm "${BASE_DIR}/config/temp.yml"
    
    ytt -f "${BASE_DIR}/config/${ENV}-git-secrets.yaml" --data-values-env GIT \
-      --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
+      --data-value-file harbor.certificate="${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml"
 
    kubectl apply -f "${BASE_DIR}/config/${ENV}-git-secrets-final.yaml" --namespace "${NAMESPACE}"
 

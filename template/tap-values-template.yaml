@@ -3,7 +3,7 @@
 shared:
   ingress_domain: #@ data.values.INGRESS_DOMAIN
   image_registry:
-    project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+    project_path: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_REGISTRY_SUPPLY_CHAIN_PROJECT
     secret:
       name: #@ data.values.REGISTRY_SECRET_NAME
       namespace: #@ data.values.INSTALL_NAMESPACE
@@ -20,7 +20,7 @@ supply_chain: #@ data.values.SUPPLY_CHAIN
 ootb_supply_chain_basic:
   registry:
     server: #@ data.values.INTERNAL_REGISTRY_HOST
-    repository: #@ data.values.INTERNAL_SUPPLY_CHAIN_PROJECT
+    repository: #@ data.values.INTERNAL_REGISTRY_SUPPLY_CHAIN_PROJECT
   gitops:
     ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 
@@ -30,7 +30,7 @@ contour:
       type: LoadBalancer
 
 buildservice:
-  kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_PROJECT + "/" + data.values.INTERNAL_REPOSITORY
+  kp_default_repository: #@ data.values.INTERNAL_REGISTRY_HOST + "/" + data.values.INTERNAL_REGISTRY_PROJECT + "/" + data.values.INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY
   kp_default_repository_secret:
     name: #@ data.values.REGISTRY_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
@@ -48,16 +48,16 @@ tap_gui:
         - type: url
           target: #@ data.values.CATALOG_URL
     techdocs:
-      builder: 'external'
+      builder:  #@ data.values.TECH_DOC_BUILDER
       publisher:
-        type: 'awsS3'
+        type: #@ data.values.TECH_DOC_PUBLISHER_TYPE
         awsS3:
-          bucketName: techdocs
+          bucketName: #@ data.values.TECH_DOC_PUBLISHER_BUCKET
           credentials:
-            accessKeyId: JWQ3rWfMBSbBMtDvomKP
-            secretAccessKey: pJvhrfAsIOUxEclbzhC0joD7bDnFgtcH
+            accessKeyId: #@ data.values.TECH_DOC_PUBLISHER_USERNAME
+            secretAccessKey: #@ data.values.TECH_DOC_PUBLISHER_PASSWORD
           s3ForcePathStyle: true
-          endpoint: http://minio.lab.int:9000
+          endpoint: #@ data.values.TECH_DOC_PUBLISHER_ENDPOINT
 
 metadata_store:
   ns_for_export_app_cert: "*"

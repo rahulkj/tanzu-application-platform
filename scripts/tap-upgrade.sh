@@ -22,13 +22,12 @@ update_package_repository() {
    export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
    export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
    export TAP_VERSION="${TAP_VERSION}"
-   export TAP_REGISTRY_NAME="${TAP_REPOSITORY_NAME}"
 
-   tanzu package repository add "${TAP_REGISTRY_NAME}" \
-   --url "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
+   tanzu package repository add "${TAP_REPOSITORY_NAME}" \
+   --url "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
    --namespace "${TAP_INSTALL_NAMESPACE}"
 
-   tanzu package repository get "${TAP_REGISTRY_NAME}" --namespace "${TAP_INSTALL_NAMESPACE}"
+   tanzu package repository get "${TAP_REPOSITORY_NAME}" --namespace "${TAP_INSTALL_NAMESPACE}"
 
    tanzu package available list --namespace "${TAP_INSTALL_NAMESPACE}"
 }

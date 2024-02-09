@@ -162,7 +162,7 @@ install_tanzu_plugins() {
 }
 
 docker_login_to_tanzunet() {
-   docker login registry.tanzu.vmware.com -u "${TAP_TANZU_REGISTRY_USERNAME}" -p "${TAP_TANZU_REGISTRY_PASSWORD}"
+   docker login "${TAP_TANZU_NETWORK_REGISTRY_HOST}" -u "${TAP_TANZU_NETWORK_REGISTRY_USERNAME}" -p "${TAP_TANZU_NETWORK_REGISTRY_PASSWORD}"
 }
 
 docker_login_to_internal_registry() {
@@ -175,13 +175,13 @@ copy_images_to_registry() {
    export INSTALL_REGISTRY_PASSWORD="${TAP_INTERNAL_REGISTRY_PASSWORD}"
    export TAP_VERSION="${TAP_VERSION}"
 
-   imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:${TAP_VERSION} \
-      --to-repo "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_INTERNAL_TAP_PACKAGES_REPOSITORY}" \
-      --registry-ca-cert-path "${INTERNAL_REGISTRY_CA_CERT_PATH}"
+   imgpkg copy -b ${TAP_TANZU_NETWORK_REGISTRY_HOST}/${TAP_TANZU_NETWORK_PROJECT}/${TAP_TANZU_NETWORK_PACKAGES_REPOSITORY_NAME}:${TAP_VERSION} \
+      --to-repo "${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}" \
+      --registry-ca-cert-path "${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}"
 
    if [[ "${TAP_PROFILE}" == "full" ]]; then
-      imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/${TAP_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
-         --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_PROJECT}/${TAP_FULL_DEPS_REPOSITORY_NAME}
+      imgpkg copy -b ${TAP_TANZU_NETWORK_REGISTRY_HOST}/${TAP_TANZU_NETWORK_PROJECT}/${TAP_TANZU_NETWORK_FULL_DEPS_REPOSITORY_NAME}:${TAP_VERSION} \
+         --to-repo ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}
    fi
 }
 
@@ -196,7 +196,7 @@ generate_tap_values() {
    rm "${BASE_DIR}/config/temp.yml"
    
    ytt -f "${BASE_DIR}/config/${ENV}-tap-values.yaml" --data-values-env TAP \
-      --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
+      --data-value-file harbor.certificate="${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
 
    ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning.yaml";
       cat "${BASE_DIR}/template/ootb-supply-chain-testing-scanning-template.yaml"
@@ -208,7 +208,7 @@ generate_tap_values() {
    rm "${BASE_DIR}/config/temp.yml"
 
    ytt -f "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning.yaml" --data-values-env TAP \
-      --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml"
+      --data-value-file harbor.certificate="${TAP_INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml"
 }
 
 logAndExecute() {
