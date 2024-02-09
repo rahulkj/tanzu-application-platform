@@ -61,6 +61,7 @@ tap_gui:
 
 metadata_store:
   ns_for_export_app_cert: "*"
+  app_service_type: ClusterIP
 
 accelerator:
   ingress:
@@ -92,3 +93,6 @@ source_controller:
   ca_cert_data: |
 $(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
 
+grype:
+  namespace: #@ data.values.DEV_NAMESPACE
+  targetImagePullSecret: #@ data.values.REGISTRY_SECRET_NAME

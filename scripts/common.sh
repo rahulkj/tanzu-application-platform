@@ -188,6 +188,7 @@ copy_images_to_registry() {
 generate_tap_values() {
    ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-tap-values.yaml";
       cat "${BASE_DIR}/template/tap-values-template.yaml"
+      echo "";
       echo "EOF";
    ) >"${BASE_DIR}/config/temp.yml"
    . "${BASE_DIR}/config/temp.yml"
@@ -197,8 +198,17 @@ generate_tap_values() {
    ytt -f "${BASE_DIR}/config/${ENV}-tap-values.yaml" --data-values-env TAP \
       --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-tap-values-final.yaml"
 
-   ytt -f "${BASE_DIR}/template/ootb-supply-chain-testing-scanning-template.yaml" \
-      --data-values-env TAP > "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml"
+   ( echo "cat <<EOF >${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning.yaml";
+      cat "${BASE_DIR}/template/ootb-supply-chain-testing-scanning-template.yaml"
+      echo "";
+      echo "EOF";
+   ) >"${BASE_DIR}/config/temp.yml"
+   . "${BASE_DIR}/config/temp.yml"
+
+   rm "${BASE_DIR}/config/temp.yml"
+
+   ytt -f "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning.yaml" --data-values-env TAP \
+      --data-value-file harbor.certificate="${INTERNAL_REGISTRY_CA_CERT_PATH}" > "${BASE_DIR}/config/${ENV}-ootb-supply-chain-testing-scanning-final.yaml"
 }
 
 logAndExecute() {
