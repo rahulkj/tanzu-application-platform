@@ -9,13 +9,13 @@ shared:
       namespace: #@ data.values.INSTALL_NAMESPACE
   kubernetes_version: #@ data.values.KUBERNETES_VERSION
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 
 ceip_policy_disclosed: TRUE
 
 profile: #@ data.values.PROFILE
 
-supply_chain: #@ data.values.SUPPLY_CHAIN
+supply_chain: #@ data.values.DEFAULT_SUPPLY_CHAIN
 
 ootb_supply_chain_basic:
   registry:
@@ -87,11 +87,11 @@ namespace_provisioner:
 
 cartographer:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 
 source_controller:
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 
 grype:
   namespace: #@ data.values.DEV_NAMESPACE

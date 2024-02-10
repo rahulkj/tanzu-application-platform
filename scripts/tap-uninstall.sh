@@ -20,6 +20,8 @@ source ${DIR}/${ENV}-env
 uninstall_tap() {
     tanzu package installed delete tap -n "${TAP_INSTALL_NAMESPACE}" -y
 
+    tanzu package repository delete "${TAP_FULL_DEPS_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
+
     tanzu package repository delete "${TAP_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
 
     tanzu secret registry delete "${TAP_REGISTRY_SECRET_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y

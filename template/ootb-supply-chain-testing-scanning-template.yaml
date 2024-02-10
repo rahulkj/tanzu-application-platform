@@ -6,7 +6,7 @@ registry:
   server: #@ data.values.INTERNAL_REGISTRY_HOST
   repository: #@ data.values.INTERNAL_REGISTRY_SUPPLY_CHAIN_PROJECT
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 gitops:
   ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 #@ elif data.values.TESTING_SUPPLY_CHAIN == "testing_scanning":
@@ -14,7 +14,7 @@ registry:
   server: #@ data.values.INTERNAL_REGISTRY_HOST
   repository: #@ data.values.INTERNAL_REGISTRY_SUPPLY_CHAIN_PROJECT
   ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $INTERNAL_REGISTRY_CA_CERT_PATH)
+$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 gitops:
   ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 cluster_builder: default

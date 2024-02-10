@@ -1,47 +1,55 @@
 export ENV=                     # Provide the prefix to your ${ENV}-env file
-export TANZU_NETWORK_TOKEN=     # Optional - Tanzu network token (Pivnet token)
 export TANZU_DOWNLOADS_DIR=     # Optional - Download directory for the packages
 
 export TANZU_CLI_DIR=           # Directory where you have unpacked the tanzu cli (https://network.tanzu.vmware.com/products/tanzu-application-platform/)
 export TANZU_ESSENTIALS_DIR=    # Directory where you have unpacked the tanzu cluster essentials (https://network.tanzu.vmware.com/products/tanzu-cluster-essentials/). Choose amd64 or darwin, based on where you are running this from
 export HARBOR_CA_CERT_PATH=     # Directory where you have your harbor certificate downloaded. ex: /Users/john/Downloads/harbor.pem
 
-export TANZU_ESSENTIALS_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ab0a3539da241a6ea59c75c0743e9058511d7c56312ea3906178ec0f3491f51d # Update this based on which TAP version you are installing
-export TAP_TANZU_REGISTRY_HOST=registry.tanzu.vmware.com
-export TAP_TANZU_REGISTRY_USERNAME= # TanzuNet username
-export TAP_TANZU_REGISTRY_PASSWORD= # TanzuNet password
+export TANZU_NETWORK_TOKEN=     # Optional - Tanzu network token (Pivnet token)
+export TAP_TANZU_NETWORK_REGISTRY_HOST=registry.tanzu.vmware.com
+export TAP_TANZU_NETWORK_REGISTRY_USERNAME= # TanzuNet username
+export TAP_TANZU_NETWORK_REGISTRY_PASSWORD= # TanzuNet password
+
+export TAP_TANZU_NETWORK_PROJECT=tanzu-application-platform
+export TAP_TANZU_NETWORK_PACKAGES_REPOSITORY_NAME=tap-packages
+export TAP_TANZU_NETWORK_FULL_DEPS_REPOSITORY_NAME=full-deps-package-repo
+
+export TANZU_ESSENTIALS_BUNDLE=${TAP_TANZU_NETWORK_REGISTRY_HOST}/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:a735783e7e950136668f2df7c8cd1ba155f365e0cd6bea4e3cfb8c2a90c26b47 # Update this based on which TAP version you are installing
 
 export TAP_INTERNAL_REGISTRY_USERNAME=        # Harbor Registry username
 export TAP_INTERNAL_REGISTRY_PASSWORD=        # Harbor Registry password
 export TAP_INTERNAL_REGISTRY_HOST=            # Harbor Registry host, ex: harbor.example.com
-export TAP_INTERNAL_PROJECT=                  # Harbor Registry project to use, ex: tanzu
-export TAP_HARBOR_REPOSITORY=                 # Harbor Registry build service repository to use, ex: build-service
-export TAP_INTERNAL_TAP_PACKAGES_REPOSITORY=  # Harbor Registry tap repository to use, ex: tap-packages
-export TAP_INTERNAL_SUPPLY_CHAIN_PROJECT=     # Harbor Registry project to use, ex: supply-chain
+export TAP_INTERNAL_REGISTRY_CA_CERT_PATH=${HARBOR_CA_LOCATION}
 
-export TAP_VERSION=1.2.0                    # TAP version
-export TANZU_ESSENTIALS_VERSION=1.2.0       # Tanzu cluster essentials version
-export TAP_KUBERNETES_VERSION=1.24
+export TAP_INTERNAL_REGISTRY_PROJECT=                       # Harbor Registry project to use, ex: tanzu
+export TAP_INTERNAL_REGISTRY_SUPPLY_CHAIN_PROJECT=          # Harbor Registry build service repository to use, ex: build-service
+export TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY=       # Harbor Registry tap repository to use, ex: tap-packages
+export TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY= # Harbor Registry project to use, ex: supply-chain
 
-export TAP_PROFILE=                         # light or full
-export TAP_INGRESS_DOMAIN=                  # Ingress domain to use for deploying contour
-export TAP_SUPPLY_CHAIN=                    # Can take basic, testing, testing_scanning
+export TAP_VERSION=1.7.3                            # TAP version
+export TANZU_ESSENTIALS_VERSION=1.7.2               # Tanzu cluster essentials version
+export TAP_KUBERNETES_VERSION=1.26
 
-export TAP_CATALOG_URL=                     # TAP blank catalog git location
+export TAP_PROFILE=                                 # light or full
+export TAP_INGRESS_DOMAIN=                          # Ingress domain to use for deploying contour
+export TAP_DEFAULT_SUPPLY_CHAIN=                    # Can take basic, testing, testing_scanning
+export TAP_TESTING_SUPPLY_CHAIN=testing_scanning    # Can take testing, testing_scanning
+
+export TAP_CATALOG_URL=                             # TAP blank catalog git location
 
 export TAP_INSTALL_NAMESPACE=tap-install
-export TAP_DEV_NAMESPACE=                   # Namespace to enable for tanzu workloads
 
-export TAP_PACKAGES_IMAGE_SHA=registry.tanzu.vmware.com/tanzu-application-platform/tap-packages@sha256:851d49d1a9786d6b3fa17fa5d669dbbb687e23d047e6c08165d629603f0d70ec
+export TAP_DEV_NAMESPACE=                           # Namespace to enable for tanzu workloads
+export TAP_DEV_REGISTRY_SECRET_NAME=registry-credentials
 
-export TAP_INTERNAL_REPOSITORY=tanzu-tap-repository
 export CLUSTER_ROLE_BINDING_NAME=default-tkg-admin-privileged-binding
 
+export TAP_REPOSITORY_NAME=tanzu-tap-repository
+export TAP_FULL_DEPS_REPOSITORY_NAME=full-deps-repository
 export TAP_REGISTRY_SECRET_NAME=tap-registry
-
 export TAP_GITOPS_SSH_SECRET_NAME=          # Gitops SSH Secret Name
+
 export GIT_GITOPS_SSH_SECRET_NAME=${TAP_GITOPS_SSH_SECRET_NAME}
 export GIT_URL=https://github.com
 export GIT_USERNAME=                        # Git Username
 export GIT_PASSWORD=                        # Git user token
-export K8S_SERVICE_ACCOUNT=default          # Set the service account name to which the credentials need to be bound to
