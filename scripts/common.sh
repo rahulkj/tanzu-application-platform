@@ -134,12 +134,12 @@ download_tanzu_application_platform() {
          pivnet download-product-files \
          --product-slug='tanzu-application-platform' \
          --release-version="${TAP_VERSION}" \
-         --glob='tanzu-cli-linux-amd64.*.gz'
+         --glob='tanzu-cli-linux-amd64*.*.gz'
       elif [[ "${OS}" == "Darwin" ]]; then
          pivnet download-product-files \
          --product-slug='tanzu-application-platform' \
          --release-version="${TAP_VERSION}" \
-         --glob='tanzu-cli-darwin-amd64.*.gz'
+         --glob='tanzu-cli-darwin-amd64*.*.gz'
       fi
    
       mkdir -p "${TANZU_CLI_DIR}"
