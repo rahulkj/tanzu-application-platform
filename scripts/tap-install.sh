@@ -126,7 +126,7 @@ add_tap_repository() {
       --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
-      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}") ]]; then
+      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep  "${TAP_REPOSITORY_NAME}" | grep "${TAP_VERSION}") ]]; then
          tanzu package repository update "${TAP_REPOSITORY_NAME}" \
          --url "${TAP_INTERNAL_REGISTRY_HOST}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_TAP_PACKAGES_REPOSITORY}:${TAP_VERSION}" \
          --namespace "${TAP_INSTALL_NAMESPACE}"
@@ -140,7 +140,7 @@ add_tap_repository() {
       --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}:${TAP_VERSION} \
       --namespace "${TAP_INSTALL_NAMESPACE}"
    else
-      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
+      if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}" | grep "${TAP_VERSION}") ]]; then
          tanzu package repository update "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
          --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}:${TAP_VERSION} \
          --namespace "${TAP_INSTALL_NAMESPACE}"
