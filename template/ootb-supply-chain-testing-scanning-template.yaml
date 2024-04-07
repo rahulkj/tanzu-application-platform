@@ -19,4 +19,5 @@ gitops:
   ssh_secret: #@ data.values.GITOPS_SSH_SECRET_NAME
 cluster_builder: default
 service_account: default
+image_scanner_template_name: image-vulnerability-scan-trivy
 #@ end
