@@ -63,6 +63,7 @@ create_kapp_controller_namespace() {
    if [[ -z "${NAMESPACE_EXISTS}" ]]; then
       echo "Creating namespace: kapp-controller, as it does not exist"
       kubectl create namespace kapp-controller
+      kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged
    else
       echo "Skipping create of the namespace: kapp-controller, as it already exists"
    fi
@@ -103,6 +104,7 @@ create_tap_installation_namespace() {
    if [[ -z "${NAMESPACE_EXISTS}" ]]; then
       echo "Creating namespace: ${TAP_INSTALL_NAMESPACE}, as it does not exist"
       kubectl create namespace "${TAP_INSTALL_NAMESPACE}"
+      kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged
    else
       echo "Skipping create of the namespace: ${TAP_INSTALL_NAMESPACE}, as it already exists"
    fi
