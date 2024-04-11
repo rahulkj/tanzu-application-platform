@@ -18,9 +18,12 @@ fi
 source ${DIR}/${ENV}-env
 
 uninstall_tap() {
-    tanzu package installed delete tap -n "${TAP_INSTALL_NAMESPACE}" -y
+    if [[ "${TAP_PROFILE}" == "full" ]]; then
+        tanzu package installed delete full-deps -n "${TAP_INSTALL_NAMESPACE}" -y
+        tanzu package repository delete "${TAP_FULL_DEPS_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
+    fi
 
-    tanzu package repository delete "${TAP_FULL_DEPS_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
+    tanzu package installed delete tap -n "${TAP_INSTALL_NAMESPACE}" -y
 
     tanzu package repository delete "${TAP_REPOSITORY_NAME}" -n "${TAP_INSTALL_NAMESPACE}" -y
 
