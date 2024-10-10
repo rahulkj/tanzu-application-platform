@@ -43,6 +43,9 @@ tap_gui:
   app_config:
     auth:
       allowGuestAccess: true
+    kubernetes:
+      serviceLocatorMethod:
+        type: multiTenant
     catalog:
       locations:
         - type: url
