@@ -166,7 +166,9 @@ install_tap() {
    tanzu package install tap -p tap.tanzu.vmware.com \
       -v "${TAP_VERSION}" --values-file "${BASE_DIR}/config/${ENV}-tap-values-final.yaml" \
       -n "${TAP_INSTALL_NAMESPACE}"
-   
+}
+
+install_full_deps() {
    if [[ "${TAP_PROFILE}" == "full" ]]; then
       PACKAGE_VERSION=$(tanzu package available list full-deps.buildservice.tanzu.vmware.com \
          --namespace tap-install -o json | jq -r '.[] | select(.name | test("full-deps")?) | .version')
@@ -320,7 +322,9 @@ logAndExecute add_full_deps_repository
 logAndExecute list_repositories
 logAndExecute list_available_packages
 logAndExecute generate_tap_values
+logAndExecute generate_ootb_supply_chain_values
 logAndExecute install_tap
+logAndExecute install_full_deps
 
 if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
    echo "No dev space to create and update"
