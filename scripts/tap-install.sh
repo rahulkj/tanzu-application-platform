@@ -136,7 +136,9 @@ add_tap_repository() {
          echo "Nothing to update here for ${TAP_REPOSITORY_NAME}"
       fi
    fi
+}
 
+add_full_deps_repository() {
    if [[ -z $(tanzu package repository list --namespace "${TAP_INSTALL_NAMESPACE}" | grep "${TAP_FULL_DEPS_REPOSITORY_NAME}") ]]; then
       tanzu package repository add "${TAP_FULL_DEPS_REPOSITORY_NAME}" \
       --url ${INSTALL_REGISTRY_HOSTNAME}/${TAP_INTERNAL_REGISTRY_PROJECT}/${TAP_INTERNAL_REGISTRY_FULL_DEPS_PACKAGES_REPOSITORY}:${TAP_VERSION} \
@@ -150,9 +152,13 @@ add_tap_repository() {
          echo "Nothing to update here for ${TAP_FULL_DEPS_REPOSITORY_NAME}"
       fi
    fi
+}
 
+list_repositories() {
    tanzu package repository get "${TAP_REPOSITORY_NAME}" --namespace "${TAP_INSTALL_NAMESPACE}"
+}
 
+list_available_packages() {
    tanzu package available list --namespace "${TAP_INSTALL_NAMESPACE}"
 }
 
@@ -310,6 +316,9 @@ logAndExecute create_tap_installation_namespace
 logAndExecute setup_git_secrets "${TAP_INSTALL_NAMESPACE}"
 logAndExecute create_registry_secrets
 logAndExecute add_tap_repository
+logAndExecute add_full_deps_repository
+logAndExecute list_repositories
+logAndExecute list_available_packages
 logAndExecute generate_tap_values
 logAndExecute install_tap
 
