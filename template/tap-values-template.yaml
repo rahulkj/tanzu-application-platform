@@ -61,6 +61,7 @@ tap_gui:
             secretAccessKey: #@ data.values.TECH_DOC_PUBLISHER_PASSWORD
           s3ForcePathStyle: true
           endpoint: #@ data.values.TECH_DOC_PUBLISHER_ENDPOINT
+          region: #@ data.values.TECH_DOC_PUBLISHER_REGION
 
 metadata_store:
   ns_for_export_app_cert: "*"
