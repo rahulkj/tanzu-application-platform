@@ -68,19 +68,8 @@ metadata_store:
   app_service_type: ClusterIP
 
 accelerator:
-  ingress:
-    include: true
-    enable_tls: false
   samples:
-    include: true
-
-appliveview:
-  ingressEnabled: true
-
-appliveview_connector:
-  backend:
-    ingressEnabled: true
-    sslDeactivated: false
+    include: false
 
 namespace_provisioner:
   controller: true
@@ -88,14 +77,6 @@ namespace_provisioner:
   - name: #@ data.values.GITOPS_SSH_SECRET_NAME
     namespace: #@ data.values.INSTALL_NAMESPACE
     create_export: true
-
-cartographer:
-  ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
-
-source_controller:
-  ca_cert_data: |
-$(awk '{printf "    %s\n", $0}' < $TAP_INTERNAL_REGISTRY_CA_CERT_PATH)
 
 grype:
   namespace: #@ data.values.DEV_NAMESPACE

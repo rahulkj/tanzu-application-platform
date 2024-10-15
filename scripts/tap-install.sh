@@ -200,6 +200,10 @@ install_full_deps() {
    fi
 }
 
+load_application_accelerators() {
+   kubectl apply -n accelerator-system -f https://raw.githubusercontent.com/vmware-tanzu/application-accelerator-samples/refs/heads/main/sample-accelerators-tap-1.12.0.yaml
+}
+
 setup_dev_namespace() {
    export INSTALL_REGISTRY_HOSTNAME="${TAP_INTERNAL_REGISTRY_HOST}"
    export INSTALL_REGISTRY_USERNAME="${TAP_INTERNAL_REGISTRY_USERNAME}"
@@ -325,6 +329,7 @@ logAndExecute generate_tap_values
 logAndExecute generate_ootb_supply_chain_values
 logAndExecute install_tap
 logAndExecute install_full_deps
+logAndExecute load_application_accelerators
 
 if [[ -z "${TAP_DEV_NAMESPACE}" ]]; then
    echo "No dev space to create and update"
