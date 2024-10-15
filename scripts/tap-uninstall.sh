@@ -42,7 +42,7 @@ uninstall_tkg_essentials() {
         ./uninstall.sh --yes
     popd
 
-    kubectl delete namespace tanzu-cluster-essentials
+    kubectl delete namespace kapp-controller
 }
 
 delete_psp_for_tkgs() {
