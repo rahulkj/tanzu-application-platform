@@ -43,6 +43,15 @@ tap_gui:
   app_config:
     auth:
       allowGuestAccess: true
+      environment: development
+      providers:
+        github:
+          development:
+            clientId: #@ data.values.INTEGRATION_GIT_CLIENT_ID
+            clientSecret: #@ data.values.INTEGRATION_GIT_CLIENT_SECRET
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
     kubernetes:
       serviceLocatorMethod:
         type: multiTenant
